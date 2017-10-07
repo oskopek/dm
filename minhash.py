@@ -1026,43 +1026,45 @@ PRIMES = [28411699,
 17454323,
 23726309,
 17670347]
-
+PRIMES = np.uint64(PRIMES)
+SIMILARITY_THRESHOLD = 0.85
 MAX_HASH_FNS = 1024
 
-R = 26
-B = 39
+#R = 29
+#B = 35
+R = 20
+B = 50
 
 assert R * B <= MAX_HASH_FNS
 
 np.random.seed(42)
+random.seed(42)
 
-FROM = 3
-TO = 49999
+FROM = 49999999
+TO =  499999999
 
-CONSTANT = 20
+a = np.zeros(R * B, dtype=np.uint64)
+b = np.zeros(R * B, dtype=np.uint64)
 
-a = np.zeros(MAX_HASH_FNS)
-b = np.zeros(MAX_HASH_FNS)
-
-for i in range(0, MAX_HASH_FNS):
+for i in range(0, R * B):
     a[i] = random.randint(FROM, TO)
     b[i] = random.randint(FROM, TO)
 
 # min hashing
 def hash_fns(values):
-    hashed = np.ones((2, MAX_HASH_FNS)) * sys.maxint
+    hashed = np.ones((2, R * B), dtype=np.uint64) * sys.maxint
     for val in values:
-        hashed[1, :] = ((a * val + b) % PRIMES) % CONSTANT
+        hashed[1, :] = ((a * val + b) % PRIMES[: R * B])
         hashed[0, :] = np.min(hashed, axis=0)
     return hashed[0]
 
 # vector (signature of band) of len R -> int
 def hash_col(band_index, band_signature):
-    # TODO: modulo later
     from_index = band_index * R
     to_index = band_index * R + min(R, band_signature.shape[0])
-    return np.sum(((a[from_index:to_index] * band_signature + b[from_index : to_index])
-        % PRIMES[from_index : to_index]) % CONSTANT) % CONSTANT
+    part1 = (a[from_index:to_index] * band_signature + b[from_index : to_index])
+    part2 = (part1 % PRIMES[from_index : to_index])
+    return np.sum((part2), dtype=np.uint64)
 
 def mapper(key, value):
     # key: None
@@ -1071,24 +1073,37 @@ def mapper(key, value):
     document = int(document.split('_')[1])
 
     values = np.asarray(values_str.split(), dtype=np.uint64)
-    # vector of MAX_HASH_FNS hashes
+    # vector of R * B hashes
     hashes = hash_fns(values)
 
-    signatures = np.zeros((B), dtype=np.uint64)
     for band_index in range(0, B):
         sig_vec = hashes[band_index * R : (band_index + 1) * R]
-        signatures[band_index] = hash_col(band_index, sig_vec)
-    str_signatures = [str(i) for i in signatures]
-    sig_key = "-".join(str_signatures)
-    yield sig_key, document
+        signature = hash_col(band_index, sig_vec)
+        yield str(band_index) + "-" + str(signature), value
+
+def calc_jaccard(A, B):
+    return len(A & B) / float(len(A | B))
 
 def reducer(key, values):
     # key: key from mapper used to aggregate
     # values: list of all value for that key
     num_of_docs = len(values)
 
-    for i in range(len(values)):
-       for j in range(i + 1, len(values)):
-            yield values[i], values[j]
+    documents = []
+    document_values = []
 
+    for value in values:
+        document, values_str = value.split(None, 1)
+        document = int(document.split('_')[1])
+        documents.append(document)
+        document_values.append(set(map(int, values_str.split())))
+
+    for i in range(len(values)):
+        for j in range(i + 1, len(values)):
+            t = [documents[i], documents[j]]
+            t.sort()
+            jaccard = calc_jaccard(document_values[i], document_values[j])
+            #print jaccard
+            if jaccard >= SIMILARITY_THRESHOLD:
+                yield t[0], t[1]
 

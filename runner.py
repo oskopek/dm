@@ -177,6 +177,7 @@ def evaluate(reported_duplicates, true_duplicates):
     for pair in true_duplicates:
         if pair not in reported_duplicates:
             fn += 1
+            logging.info('Pair not found: %d, %d', pair[0], pair[1])
 
     logging.info("TP=%d, FP=%d, FN=%d", tp, fp, fn)
     
