@@ -27,12 +27,9 @@ def d3sample(xs, centroids, n_clusters=200):
     #alpha = np.log2(n_clusters)+1
     alpha = 16 * (np.log2(n_clusters) + 2)
     distances = cdist(centroids, xs, metric='sqeuclidean')
-    print distances.shape
-    print 'n_points:', n_points, 'n_clusters', n_clusters
     min_distances = np.min(distances, axis=0)
     c_phi = np.sum(min_distances) / n_points
     closest_centroid_indices = np.argmin(distances, axis=0)
-    print closest_centroid_indices.shape
     assert closest_centroid_indices.shape[0] == n_points
     probs = np.zeros(n_points)
     for i in range(n_points):
@@ -52,9 +49,7 @@ def kmeans_pp(xs, n_clusters):
     probs = np.ones(n_points)/n_points
     centroids = sample_from_points(xs, probs, 1)
     for k in range(n_clusters-1):
-        print 'centroids_shape', centroids.shape
         new_centroid = d2sample(xs, centroids, 1)
-        print 'new_centroid_shape', new_centroid.shape
         centroids = np.concatenate((centroids, new_centroid), axis=0)
     return centroids
 
@@ -86,7 +81,11 @@ def kmeans_mem(xs, initial_centroids=None, n_clusters=200, n_iterations=50, earl
 def mapper(key, value):
     # key: None
     # value: Numpy array of the points.
-    centers = kmeans_mem(value, n_clusters=1)
+    n_clusters = 2000
+    uniform_probs = np.ones(value.shape[0]) / value.shape[0]
+    centers = sample_from_points(value, p=uniform_probs, n_samples=n_clusters)
+    for i in range(10):
+        centers = d3sample(value, centers, n_clusters=n_clusters)
     yield 0, (centers, value)
 
 
@@ -94,15 +93,9 @@ def reducer(key, values):
     # key: key from mapper used to aggregate (constant)
     # values: list of cluster centers.
 
-    #batch_centroids = np.asarray([value[0] for value in values])
-    #batch_centroids = np.reshape(batch_centroids, (-1, NUM_FEATURES))
-    #initial_centroids = kmeans_mem(batch_centroids)
+    batch_centroids = np.asarray([value[0] for value in values])
+    batch_centroids = np.reshape(batch_centroids, (-1, NUM_FEATURES))
 
-    points = np.asarray([value[1] for value in values])
-    points = np.reshape(points, (-1, NUM_FEATURES))
-
-    #initial_centroids = d3sample(points, initial_centroids)
-
-    centers = kmeans_mem(points)
+    centers = kmeans_mem(batch_centroids)
     yield centers
 
