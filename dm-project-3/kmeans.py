@@ -22,6 +22,13 @@ def d2sample(xs, centroids, n_clusters=200):
     probs = min_distances / np.sum(min_distances)
     return sample_from_points(xs, probs, n_clusters)
 
+def kpp_sample(xs, distances, new_centroid):
+    new_distances = cdist([new_centroid], xs, metric='sqeuclidean')
+    distances = np.concatenate((distances, new_distances), axis=0)
+    min_distances = np.min(distances, axis=0)
+    probs = min_distances / np.sum(min_distances)
+    return distances, sample_from_points(xs, probs, 1)
+
 def d3sample(xs, centroids, n_clusters=200):
     n_points = xs.shape[0]
     #alpha = np.log2(n_clusters)+1
@@ -48,16 +55,18 @@ def kmeans_pp(xs, n_clusters):
     n_points = xs.shape[0]
     probs = np.ones(n_points)/n_points
     centroids = sample_from_points(xs, probs, 1)
+    distances = np.empty((0, n_points), dtype=np.float32)
     for k in range(n_clusters-1):
-        new_centroid = d2sample(xs, centroids, 1)
+        distances, new_centroid = kpp_sample(xs, distances, centroids[-1])
         centroids = np.concatenate((centroids, new_centroid), axis=0)
     return centroids
 
-def kmeans_mem(xs, initial_centroids=None, n_clusters=200, n_iterations=50, early_stopping=0.002):
+def kmeans_mem(xs, initial_centroids=None, n_clusters=200, n_iterations=50, early_stopping=0.2):
     # TODO: RUN with restarts
     n_points = xs.shape[0]
     if initial_centroids is None:
         centroids = kmeans_pp(xs, n_clusters)
+        print('kpp')
     else:
         centroids = initial_centroids
     centroids_old = np.zeros_like(centroids)
@@ -81,21 +90,20 @@ def kmeans_mem(xs, initial_centroids=None, n_clusters=200, n_iterations=50, earl
 def mapper(key, value):
     # key: None
     # value: Numpy array of the points.
-    n_clusters = 2000
+    n_clusters = 1000
     uniform_probs = np.ones(value.shape[0]) / value.shape[0]
     centers = sample_from_points(value, p=uniform_probs, n_samples=n_clusters)
-    for i in range(10):
+    for i in range(2):
         centers = d3sample(value, centers, n_clusters=n_clusters)
-    yield 0, (centers, value)
-
+    yield 0, centers
+    print('map')
 
 def reducer(key, values):
     # key: key from mapper used to aggregate (constant)
     # values: list of cluster centers.
 
-    batch_centroids = np.asarray([value[0] for value in values])
-    batch_centroids = np.reshape(batch_centroids, (-1, NUM_FEATURES))
+    batch_centroids = np.reshape(values, (-1, NUM_FEATURES))
 
     centers = kmeans_mem(batch_centroids)
+    print('ex')
     yield centers
-
