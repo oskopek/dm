@@ -1,52 +1,108 @@
+from __future__ import division
 import numpy as np
 import random
 from scipy.spatial.distance import cdist
 
+NUM_FEATURES = 250
 # TODO: Do weighted mean of the clusters
 
-#random.seed(42)
-#np.random.seed(42)
+random.seed(42)
+np.random.seed(42)
+
+def sample_from_points(xs, p, n_samples):
+    assert(n_samples <= xs.shape[0])
+    return xs[np.random.choice(range(0, xs.shape[0]), n_samples, replace=False, p=p)]
 
 def dist(xs, ys):
     return np.square(xs-ys).sum()
 
-def kmeans_mem(xs, n_clusters=200, n_iterations=50):
-    indices = np.random.random_integers(0, xs.shape[0], n_clusters)
-    centroids = xs[indices]
+def d2sample(xs, centroids, n_clusters=200):
+    distances = cdist(centroids, xs, metric='sqeuclidean')
+    min_distances = np.min(distances, axis=0)
+    probs = min_distances / np.sum(min_distances)
+    return sample_from_points(xs, probs, n_clusters)
+
+def d3sample(xs, centroids, n_clusters=200):
+    n_points = xs.shape[0]
+    #alpha = np.log2(n_clusters)+1
+    alpha = 16 * (np.log2(n_clusters) + 2)
+    distances = cdist(centroids, xs, metric='sqeuclidean')
+    print distances.shape
+    print 'n_points:', n_points, 'n_clusters', n_clusters
+    min_distances = np.min(distances, axis=0)
+    c_phi = np.sum(min_distances) / n_points
+    closest_centroid_indices = np.argmin(distances, axis=0)
+    print closest_centroid_indices.shape
+    assert closest_centroid_indices.shape[0] == n_points
+    probs = np.zeros(n_points)
+    for i in range(n_points):
+        B_i = closest_centroid_indices[i]
+        idx_Bi = closest_centroid_indices == B_i
+        Bi_len = np.sum(idx_Bi)
+        first_term = alpha * min_distances[i]/c_phi
+        second_term = 2 * alpha * np.sum(min_distances[idx_Bi]) / (Bi_len * c_phi)
+        third_term = 4 * n_points/Bi_len
+        probs[i] = first_term + second_term + third_term
+
+    probs = probs / np.sum(probs)
+    return sample_from_points(xs, probs, n_clusters)
+
+def kmeans_pp(xs, n_clusters):
+    n_points = xs.shape[0]
+    probs = np.ones(n_points)/n_points
+    centroids = sample_from_points(xs, probs, 1)
+    for k in range(n_clusters-1):
+        print 'centroids_shape', centroids.shape
+        new_centroid = d2sample(xs, centroids, 1)
+        print 'new_centroid_shape', new_centroid.shape
+        centroids = np.concatenate((centroids, new_centroid), axis=0)
+    return centroids
+
+def kmeans_mem(xs, initial_centroids=None, n_clusters=200, n_iterations=50, early_stopping=0.002):
+    # TODO: RUN with restarts
+    n_points = xs.shape[0]
+    if initial_centroids is None:
+        centroids = kmeans_pp(xs, n_clusters)
+    else:
+        centroids = initial_centroids
     centroids_old = np.zeros_like(centroids)
     for iteration in range(n_iterations):
         diff = np.linalg.norm(centroids-centroids_old)
-        if diff < 0.2:
+        if diff < early_stopping:
             break
-        print(iteration, diff)
+        # print(iteration, diff)
         clusters = [[] for i in range(n_clusters)]
-        distances = cdist(centroids, xs)
+        distances = cdist(centroids, xs, metric='sqeuclidean')
         idxs = np.argmin(distances, axis=0)
+        assert idxs.shape[0] == n_points
         centroids_old = np.copy(centroids)
         for i in range(n_clusters):
             idxs_i = idxs == i
             if idxs_i.any():
                 centroids[i] = np.mean(xs[idxs_i], axis=0)
-            else:
-                print('Centroid', i, 'has no points.')
-                mean_dist_to_centroids = np.mean(distances, axis=0)
-                new_center = np.argmax(mean_dist_to_centroids)
-                print('Choosing point', new_center, 'distance:', mean_dist_to_centroids[new_center])
-                centroids[i] = xs[new_center]
 
     return centroids
 
 def mapper(key, value):
     # key: None
     # value: Numpy array of the points.
-    centers = kmeans_mem(value, n_clusters=400)
-    yield 0, 
+    centers = kmeans_mem(value, n_clusters=1)
+    yield 0, (centers, value)
 
 
 def reducer(key, values):
     # key: key from mapper used to aggregate (constant)
     # values: list of cluster centers.
-    #yield np.means
-    centers = kmeans_mem(np.asarray(values))
+
+    #batch_centroids = np.asarray([value[0] for value in values])
+    #batch_centroids = np.reshape(batch_centroids, (-1, NUM_FEATURES))
+    #initial_centroids = kmeans_mem(batch_centroids)
+
+    points = np.asarray([value[1] for value in values])
+    points = np.reshape(points, (-1, NUM_FEATURES))
+
+    #initial_centroids = d3sample(points, initial_centroids)
+
+    centers = kmeans_mem(points)
     yield centers
 
