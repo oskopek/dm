@@ -10,7 +10,8 @@ np.random.seed(42)
 
 def sample_from_points(xs, p, n_samples):
     assert(n_samples <= xs.shape[0])
-    return xs[np.random.choice(xs.shape[0], n_samples, replace=False, p=p)]
+    idx = np.random.choice(xs.shape[0], n_samples, replace=False, p=p)
+    return xs[idx], p[idx]
 
 def d2sample(xs, centroids, n_clusters=200):
     distances = cdist(centroids, xs, metric='sqeuclidean')
@@ -71,6 +72,7 @@ def kmeans_mem(xs, initial_centroids=None, n_clusters=200, n_iterations=50, earl
     centroids_old = np.zeros_like(centroids)
     for iteration in range(n_iterations):
         diff = np.linalg.norm(centroids-centroids_old)
+        print 'it', iteration, ' diff: ', diff
         if diff < early_stopping:
             break
         distances = cdist(centroids, xs, metric='sqeuclidean')
@@ -97,7 +99,7 @@ def mapper(key, value):
     else:
         centers = value
     print('map')
-    yield 0, centers
+    yield 0, (centers, "separator", value)
 
 # Not used
 def eval_k_means(xs, centers):
@@ -108,7 +110,15 @@ def eval_k_means(xs, centers):
 def reducer(key, values):
     # key: key from mapper used to aggregate (constant)
     # values: list of cluster centers.
-    batch_centroids = np.reshape(values, (-1, NUM_FEATURES))
+    batch_centroids = np.asarray([value[0] for value in values])
+    batch_centroids = np.reshape(batch_centroids, (-1, NUM_FEATURES))
+
+    all_points = np.asarray([value[2] for value in values])
+    all_points = np.reshape(all_points, (-1, NUM_FEATURES))
+
+
     centers = kmeans_mem(batch_centroids)
+    print('first kmeans')
+    res_centers = kmeans_mem(all_points, initial_centroids=centers, early_stopping=0.5)
     print('ex')
     yield centers
