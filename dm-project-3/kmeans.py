@@ -18,13 +18,10 @@ def sqdist(centers, xs):
 
 # Sample n_samples points from xs according to the distribution p,
 # without replacement.
-def sample_from_points(xs, p, n_samples, output_weights=False):
+def sample_from_points(xs, p, n_samples):
     assert(n_samples <= xs.shape[0])
     idx = np.random.choice(xs.shape[0], n_samples, replace=False, p=p)
-    if output_weights:
-        return xs[idx], 1/p[idx]
-    else:
-        return xs[idx]
+    return xs[idx], 1/p[idx]
 
 
 # Sample n_samples points from xs based on the inverse squared distance
@@ -62,7 +59,7 @@ def d3sample(xs, centers, n_clusters=200):
         4 * n_points / B_i_lens
 
     probs = probs / np.sum(probs)
-    return sample_from_points(xs, probs, n_clusters, True)
+    return sample_from_points(xs, probs, n_clusters)
 
 
 # Implements kmeans++.
@@ -72,7 +69,7 @@ def kmeans_pp(xs, n_clusters, weights):
     def kpp_sample_iter(xs, distances, iteration):
         min_distances = np.min(distances[:iteration], axis=0)
         probs = min_distances / np.sum(min_distances)
-        new_point = sample_from_points(xs, probs, 1)
+        new_point, _ = sample_from_points(xs, probs, 1)
         distances[iteration, :] = sqdist(new_point, xs)
         return new_point
 
@@ -82,7 +79,7 @@ def kmeans_pp(xs, n_clusters, weights):
 
     centers = np.zeros((n_clusters, NUM_FEATURES))
     distances = np.zeros((n_clusters, n_points))
-    centers[0] = sample_from_points(xs, probs, 1)
+    centers[0], _ = sample_from_points(xs, probs, 1)
     distances[0] = sqdist([centers[0]], xs) * weights
     for k in range(1, n_clusters):
         centers[k] = kpp_sample_iter(xs, distances, k)
@@ -126,10 +123,12 @@ def mapper(key, value):
     n_points = value.shape[0]
     n_clusters = min(n_points-1, 3000)
     uniform_probs = np.ones(n_points) / n_points
-    centers = sample_from_points(value, p=uniform_probs, n_samples=n_clusters)
+    centers, _ = sample_from_points(value, p=uniform_probs, n_samples=n_clusters)
     centers, weights = d3sample(value, centers, n_clusters=n_clusters)
     print('mapper:\tend')
-    yield 0, (centers, weights, "separator", value)
+    # A 'separator' value is used in order for pickle not to squash everything
+    # into a single numpy array.
+    yield 0, (centers, weights, 'separator', value)
 
 
 # Reducer: runs kmeans_mem on the centers provided (includes KMeans++).
