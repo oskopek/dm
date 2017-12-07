@@ -13,7 +13,7 @@ np.random.seed(42)
 # columns distances from points in xs.
 def sqdist(centers, xs):
     # TODO: Try a different metric
-    return cdist(centers, xs, metric='sqeuclidian')
+    return cdist(centers, xs, metric='sqeuclidean')
 
 
 # Sample n_samples points from xs according to the distribution p,
