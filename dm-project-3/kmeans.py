@@ -12,7 +12,6 @@ np.random.seed(42)
 # Calculate the squared distances, rows represent distances from centers,
 # columns distances from points in xs.
 def sqdist(centers, xs):
-    # TODO: Try a different metric
     return cdist(centers, xs, metric='sqeuclidean')
 
 
