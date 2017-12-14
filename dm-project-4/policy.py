@@ -3,7 +3,7 @@ import numpy as np
 USER_FEATURES = 6
 ARTICLE_FEATURES = 6
 
-DELTA = 0.2
+DELTA = 0.01
 ALPHA = 1 + np.sqrt(np.log(2/DELTA)/2)
 print(ALPHA)
 
