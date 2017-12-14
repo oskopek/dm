@@ -3,8 +3,8 @@ import numpy as np
 USER_FEATURES = 6
 ARTICLE_FEATURES = 6
 
-DELTA = 0.01
-ALPHA = 1 + np.sqrt(np.log(2/DELTA)/2)
+DELTA = 0.1
+ALPHA = 1.0 + np.sqrt(np.log(2.0/DELTA)/2.0)
 print(ALPHA)
 
 articles = None
@@ -42,6 +42,9 @@ def update(reward):
     article_id = last_chosen_article_id
     zt = last_zt
 
+    if reward == -1:
+        return
+
     dott = B[article_id].T.dot(Ainvs[article_id])
     A0 += dott.dot(B[article_id])
     b0 += dott.dot(b[article_id])
@@ -52,13 +55,10 @@ def update(reward):
     B[article_id] += np.outer(x, zt)
     b[article_id] += reward * x
 
-    dott2 = B[article_id].T.dot(Ainvs[article_id])
-    A0 += np.outer(zt, zt) - dott2.dot(B[article_id])
+    dott = B[article_id].T.dot(Ainvs[article_id])
+    A0 += np.outer(zt, zt) - dott.dot(B[article_id])
     A0inv = np.linalg.inv(A0)
     b0 += reward * zt - dott.dot(b[article_id])
-
-    last_zt = None
-    last_chosen_article_id = -1
 
 
 def recommend(time, user_features, choices):
