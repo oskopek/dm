@@ -8,6 +8,7 @@ ALPHA = 1 + np.sqrt(np.log(2/DELTA)/2)
 print(ALPHA)
 
 M = dict()
+Minvs = dict()
 b = dict()
 
 w = dict()
@@ -21,6 +22,7 @@ def set_articles(articles):
     # articles - dictionary of (about 80) article id -> features (of len 6)
     for article_id in articles.keys():
         M[article_id] = np.eye(USER_FEATURES, USER_FEATURES)
+        Minvs[article_id] = np.eye(USER_FEATURES, USER_FEATURES)
         b[article_id] = np.zeros(USER_FEATURES)
 
 
@@ -31,6 +33,7 @@ def update(reward):
     assert last_zt is not None
     article = last_chosen_article_id
     M[article] += np.outer(last_zt, last_zt)
+    Minvs[article] = np.linalg.inv(M[article])
     b[article] += reward * last_zt
 
     last_zt = None
@@ -46,7 +49,7 @@ def recommend(time, user_features, choices):
     UCB_max = np.NINF
     UCB_argmax = np.random.choice(choices)
     for article_id in choices:
-        Minv = np.linalg.inv(M[article_id])
+        Minv = Minvs[article_id]
         w[article_id] = np.matmul(Minv, b[article_id])
         UCB[article_id] = np.dot(w[article_id], zt) + ALPHA * np.sqrt(np.dot(zt, np.matmul(Minv, zt)))
         if UCB[article_id] > UCB_max:
