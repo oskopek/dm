@@ -1,34 +1,39 @@
 import numpy as np
 
 USER_FEATURES = 6
-ARTICLE_FEATURES = 12
+ARTICLE_FEATURES = 6
+OUT_FEATURES = ARTICLE_FEATURES * USER_FEATURES
 
 # DELTA = 0.01
 # ALPHA = 1.0 + np.sqrt(np.log(2.0/DELTA)/2.0)
 ALPHA = 0.2
 print(ALPHA)
 
-A0 = np.eye(USER_FEATURES)
-A0inv = np.eye(USER_FEATURES)
-b0 = np.zeros((USER_FEATURES, 1))
+A0 = np.eye(OUT_FEATURES)
+A0inv = np.eye(OUT_FEATURES)
+b0 = np.zeros((OUT_FEATURES, 1))
 
 UPPER_ARTICLES = 271
 
-xs = np.zeros((UPPER_ARTICLES, ARTICLE_FEATURES-USER_FEATURES))
-As = np.zeros((UPPER_ARTICLES, ARTICLE_FEATURES, ARTICLE_FEATURES))
-Ainvs = np.zeros((UPPER_ARTICLES, ARTICLE_FEATURES, ARTICLE_FEATURES))
-Bs = np.zeros((UPPER_ARTICLES, ARTICLE_FEATURES, USER_FEATURES))
-bs = np.zeros((UPPER_ARTICLES, ARTICLE_FEATURES, 1))
+xs = np.zeros((UPPER_ARTICLES, ARTICLE_FEATURES, 1))
+As = np.zeros((UPPER_ARTICLES, USER_FEATURES, USER_FEATURES))
+Ainvs = np.zeros((UPPER_ARTICLES, USER_FEATURES, USER_FEATURES))
+Bs = np.zeros((UPPER_ARTICLES, USER_FEATURES, OUT_FEATURES))
+bs = np.zeros((UPPER_ARTICLES, USER_FEATURES, 1))
 
 last_chosen_idx = None
 last_z = None
 last_x = None
 
 indexes = dict()
+inv_indexes = dict()
 
 
 def a_index(article_ids):
-    return [indexes[idx] for idx in article_ids]
+    if isinstance(article_ids, int):
+        return indexes[article_ids]
+    else:
+        return [indexes[idx] for idx in article_ids]
 
 
 def set_articles(articles):
@@ -36,12 +41,13 @@ def set_articles(articles):
     counter = 0
     for article_id, article in articles.iteritems():
         indexes[article_id] = counter
+        inv_indexes[counter] = article_id
 
-        xs[counter] = np.asarray(article)
-        As[counter] = np.eye(ARTICLE_FEATURES)
-        Ainvs[counter] = np.eye(ARTICLE_FEATURES)
-        Bs[counter] = np.zeros((ARTICLE_FEATURES, USER_FEATURES))
-        bs[counter] = np.zeros((ARTICLE_FEATURES, 1))
+        xs[counter, :, 0] = np.asarray(article)
+        As[counter] = np.eye(USER_FEATURES)
+        Ainvs[counter] = np.eye(USER_FEATURES)
+        Bs[counter] = np.zeros((USER_FEATURES, OUT_FEATURES))
+        bs[counter] = np.zeros((USER_FEATURES, 1))
 
         counter += 1
 
@@ -83,7 +89,7 @@ def recommend(time, user_features, choices):
     # choices - list - ids of articles to choose from, len 20
     global last_chosen_idx, last_z, last_x
     n_choices = len(choices)
-    z = np.asarray(user_features)
+    user = np.asarray(user_features)
 
     idx = a_index(choices)  # (n_choices)
     Ainv = Ainvs[idx]  # (n_choices, ARTICLE, ARTICLE)
@@ -92,14 +98,17 @@ def recommend(time, user_features, choices):
 
     beta = np.matmul(A0inv, b0)  # (ARTICLE, 1)
 
-    x = np.zeros((n_choices, ARTICLE_FEATURES, 1))
-    x[:, :USER_FEATURES, 0] = xs[idx]
-    x[:, USER_FEATURES:, 0] = z
-
-    z = np.expand_dims(z, 0)
-    z = np.repeat(z, n_choices, axis=0)
-    z = np.expand_dims(z, -1)
+    user = np.expand_dims(user, 0)
+    user = np.repeat(user, n_choices, axis=0)
+    user = np.expand_dims(user, -1)
     # (n_choices, USER_FEATURES, 1)
+
+    xss = xs[idx]
+    xsT = np.transpose(xss, axes=(0, 2, 1))
+    x = np.matmul(user, xsT)
+    x = np.reshape(x, (n_choices, OUT_FEATURES, 1))
+    z = x
+    x = user
 
     xT = np.transpose(x, axes=(0, 2, 1))
     zT = np.transpose(z, axes=(0, 2, 1))

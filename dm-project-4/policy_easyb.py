@@ -1,13 +1,18 @@
 import numpy as np
+import random
 
 USER_FEATURES = 6
 ARTICLE_FEATURES = 6
-FEATURES = ARTICLE_FEATURES
+FEATURES = USER_FEATURES + ARTICLE_FEATURES
 
+DELTA = 0.05
 ALPHA = 0.2 # 1 + np.sqrt(np.log(2/DELTA)/2)
 print(ALPHA)
 
 garticles = None
+
+random.seed(42)
+np.random.seed(42)
 
 M = dict()
 Minvs = dict()
@@ -15,7 +20,7 @@ b = dict()
 
 last_chosen_article_id = -1
 last_zt = None
-time = 0
+
 
 def set_articles(articles):
     # articles - dictionary of (about 80) article id -> features (of len 6)
@@ -31,7 +36,7 @@ def update(reward):
     # reward - int
     if reward == -1:
         return
-    global last_chosen_article_id, last_zt, time
+    global last_chosen_article_id, last_zt
     assert last_chosen_article_id >= 0
     assert last_zt is not None
     article = last_chosen_article_id
@@ -41,18 +46,20 @@ def update(reward):
 
     last_zt = None
     last_chosen_article_id = -1
-    time += 1
 
 
-def recommend(timestamp, user_features, choices):
+def recommend(time, user_features, choices):
     # time - int
     # user_features - list - user features, len 6
     # choices - list - ids of articles to choose from, len 20
-    global garticles, last_zt, time
-    zt = np.asarray(user_features)
+    zt = np.zeros(FEATURES)
+    zt[:USER_FEATURES] = np.asarray(user_features)
+    global garticles, last_zt
+
     UCB_max = np.NINF
-    UCB_argmax = -1
+    UCB_argmax = np.random.choice(choices)
     for article_id in choices:
+        zt[USER_FEATURES:FEATURES] = garticles[article_id]
         Minv = Minvs[article_id]
         w = Minv.dot(b[article_id])
         UCB = w.dot(zt) + ALPHA * np.sqrt(zt.dot(Minv.dot(zt)))
@@ -63,4 +70,5 @@ def recommend(timestamp, user_features, choices):
 
     global last_chosen_article_id
     last_chosen_article_id = UCB_argmax
+    #last_zt = zt
     return UCB_argmax
