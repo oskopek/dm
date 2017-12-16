@@ -5,8 +5,7 @@ USER_FEATURES = 6
 ARTICLE_FEATURES = 6
 FEATURES = USER_FEATURES + ARTICLE_FEATURES
 
-DELTA = 0.05
-ALPHA = 0.2 # 1 + np.sqrt(np.log(2/DELTA)/2)
+ALPHA = 0.2  # 1 + np.sqrt(np.log(2/DELTA)/2)
 print(ALPHA)
 
 garticles = None
@@ -31,6 +30,7 @@ def set_articles(articles):
         M[article_id] = np.eye(FEATURES)
         Minvs[article_id] = np.eye(FEATURES)
         b[article_id] = np.zeros(FEATURES)
+
 
 def update(reward):
     # reward - int
@@ -70,5 +70,4 @@ def recommend(time, user_features, choices):
 
     global last_chosen_article_id
     last_chosen_article_id = UCB_argmax
-    #last_zt = zt
     return UCB_argmax
