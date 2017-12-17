@@ -56,6 +56,8 @@ def update(reward):
     # reward - int
     if reward == -1:
         return
+    elif reward == 0:
+        reward = -1
 
     global last_chosen_idx, last_z, A0, b0, A0inv, last_x
     A = As[last_chosen_idx]  # (ARTICLE, ARTICLE)
