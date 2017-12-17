@@ -13,14 +13,6 @@ A0 = np.eye(OUT_FEATURES)
 A0inv = np.eye(OUT_FEATURES)
 b0 = np.zeros((OUT_FEATURES, 1))
 
-UPPER_ARTICLES = 271
-
-xs = np.zeros((UPPER_ARTICLES, ARTICLE_FEATURES, 1))
-As = np.zeros((UPPER_ARTICLES, USER_FEATURES, USER_FEATURES))
-Ainvs = np.zeros((UPPER_ARTICLES, USER_FEATURES, USER_FEATURES))
-Bs = np.zeros((UPPER_ARTICLES, USER_FEATURES, OUT_FEATURES))
-bs = np.zeros((UPPER_ARTICLES, USER_FEATURES, 1))
-
 last_chosen_idx = None
 last_z = None
 last_x = None
@@ -38,6 +30,14 @@ def a_index(article_ids):
 
 def set_articles(articles):
     # articles - dictionary of (about 80) article id -> features (of len 6)
+    counter = len(articles)
+    global xs, As, Ainvs, Bs, bs
+    xs = np.zeros((counter, ARTICLE_FEATURES, 1))
+    As = np.zeros((counter, USER_FEATURES, USER_FEATURES))
+    Ainvs = np.zeros((counter, USER_FEATURES, USER_FEATURES))
+    Bs = np.zeros((counter, USER_FEATURES, OUT_FEATURES))
+    bs = np.zeros((counter, USER_FEATURES, 1))
+
     counter = 0
     for article_id, article in articles.iteritems():
         indexes[article_id] = counter
