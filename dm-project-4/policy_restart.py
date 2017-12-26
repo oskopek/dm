@@ -28,18 +28,25 @@ def a_index(article_ids):
         return [indexes[idx] for idx in article_ids]
 
 
-def set_articles(articles, alpha=None):
-    global ALPHA
-    if alpha is not None:
-        ALPHA = alpha
+def reset_article(counter, time):
+    global As, Ainvs, Bs, bs, first_time
+    As[counter] = np.eye(USER_FEATURES)
+    Ainvs[counter] = np.eye(USER_FEATURES)
+    Bs[counter] = np.zeros((USER_FEATURES, OUT_FEATURES))
+    bs[counter] = np.zeros((USER_FEATURES, 1))
+    first_time[counter] = time
+
+
+def set_articles(articles):
     # articles - dictionary of (about 80) article id -> features (of len 6)
     counter = len(articles)
-    global xs, As, Ainvs, Bs, bs
+    global xs, As, Ainvs, Bs, bs, first_time
     xs = np.zeros((counter, ARTICLE_FEATURES, 1))
     As = np.zeros((counter, USER_FEATURES, USER_FEATURES))
     Ainvs = np.zeros((counter, USER_FEATURES, USER_FEATURES))
     Bs = np.zeros((counter, USER_FEATURES, OUT_FEATURES))
     bs = np.zeros((counter, USER_FEATURES, 1))
+    first_time = np.zeros((counter))
 
     counter = 0
     for article_id, article in articles.iteritems():
@@ -47,10 +54,7 @@ def set_articles(articles, alpha=None):
         inv_indexes[counter] = article_id
 
         xs[counter, :, 0] = np.asarray(article)
-        As[counter] = np.eye(USER_FEATURES)
-        Ainvs[counter] = np.eye(USER_FEATURES)
-        Bs[counter] = np.zeros((USER_FEATURES, OUT_FEATURES))
-        bs[counter] = np.zeros((USER_FEATURES, 1))
+        reset_article(counter, 0)
 
         counter += 1
 
@@ -114,6 +118,11 @@ def recommend(time, user_features, choices):
     x = np.reshape(x, (n_choices, OUT_FEATURES, 1))
     z = x
     x = user
+
+    for i in idx:
+        showed = time - first_time[i]
+        if showed > 86400:
+            reset_article(i, time)
 
     xT = np.transpose(x, axes=(0, 2, 1))
     zT = np.transpose(z, axes=(0, 2, 1))

@@ -42,7 +42,7 @@ def process_line(policy, logline):
     return reward, chosen, policy.recommend(time, user_features, articles)
 
 
-def evaluate(policy, input_generator):
+def evaluate(policy, input_generator, alpha):
     score = 0.0
     impressions = 0.0
     n_lines = 0.0
@@ -62,6 +62,8 @@ def evaluate(policy, input_generator):
     else:
         score /= impressions
         logger.info("CTR achieved by the policy: %.5f" % score)
+        if alpha is not None:
+            logger.info("%.5f: %.5f" % (alpha, score))
         return score
 
 
@@ -72,16 +74,16 @@ def import_from_file(f):
     return mod
 
 
-def run(source, log_file, articles_file):
+def run(source, log_file, articles_file, alpha):
     policy = import_from_file(source)
     articles_np = np.loadtxt(articles_file)
     articles = {}
     for art in articles_np:
         articles[int(art[0])] = [float(x) for x in art[1:]]
-    policy.set_articles(articles)
+    policy.set_articles(articles, alpha)
     with io.open(log_file, 'rb', buffering=1024*1024*512) as inf:
-        return evaluate(policy, inf)
-    
+        return evaluate(policy, inf, alpha)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -95,7 +97,9 @@ if __name__ == "__main__":
         'source_file', help='.py file implementing the policy.')
     parser.add_argument(
         '--log', '-l', help='Enable logging for debugging', action='store_true')
+    parser.add_argument(
+        '--alpha', '-a', help='Alpha')
     args = parser.parse_args()
     with open(args.source_file, "r") as fin:
         source = fin.read()
-    run(source, args.log_file, args.articles_file)
+    run(source, args.log_file, args.articles_file, args.alpha)

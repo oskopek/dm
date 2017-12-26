@@ -7,7 +7,7 @@ FEATURES = ARTICLE_FEATURES
 ALPHA = 0.2  # 1 + np.sqrt(np.log(2/DELTA)/2)
 print(ALPHA)
 
-garticles = None
+xs = None
 
 M = dict()
 Minvs = dict()
@@ -19,10 +19,10 @@ last_zt = None
 
 def set_articles(articles):
     # articles - dictionary of (about 80) article id -> features (of len 6)
-    global garticles
-    garticles = articles
+    global xs
+    xs = articles
     for article_id in articles.keys():
-        garticles[article_id] = np.asarray(articles[article_id])
+        xs[article_id] = np.asarray(articles[article_id])
         M[article_id] = np.eye(FEATURES)
         Minvs[article_id] = np.eye(FEATURES)
         b[article_id] = np.zeros(FEATURES)
@@ -48,7 +48,7 @@ def recommend(timestamp, user_features, choices):
     # timestamp - int
     # user_features - list - user features, len 6
     # choices - list - ids of articles to choose from, len 20
-    global garticles, last_zt
+    global xs, last_zt
     zt = np.asarray(user_features)
     UCB_max = np.NINF
     UCB_argmax = -1
