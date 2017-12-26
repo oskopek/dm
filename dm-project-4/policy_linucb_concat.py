@@ -7,7 +7,7 @@ FEATURES = ARTICLE_FEATURES + USER_FEATURES
 last_chosen_idx = None
 last_z = None
 
-ALPHA = 0.112903226
+ALPHA = float(0.112903226)
 
 indexes = dict()
 inv_indexes = dict()

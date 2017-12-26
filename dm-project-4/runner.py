@@ -63,7 +63,7 @@ def evaluate(policy, input_generator, alpha):
         score /= impressions
         logger.info("CTR achieved by the policy: %.5f" % score)
         if alpha is not None:
-            logger.info("%.5f: %.5f" % (alpha, score))
+            logger.info("%.5f: %.5f" % (float(alpha), float(score)))
         return score
 
 
