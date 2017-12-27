@@ -1,0 +1,104 @@
+20830
+INFO:__main__:CTR achieved by the policy: 0.06782
+INFO:__main__:0.10000: 0.06782
+0.2
+INFO:__main__:CTR achieved by the policy: 0.06247
+INFO:__main__:0.12258: 0.06247
+0.2
+--- Tue Dec 26 20:00:23 CET 2017
+22857
+INFO:__main__:CTR achieved by the policy: 0.06604
+INFO:__main__:0.10968: 0.06604
+0.2
+INFO:__main__:CTR achieved by the policy: 0.06393
+INFO:__main__:0.11613: 0.06393
+0.2
+INFO:__main__:CTR achieved by the policy: 0.06624
+INFO:__main__:0.11935: 0.06624
+0.2
+INFO:__main__:CTR achieved by the policy: 0.06857
+INFO:__main__:0.11290: 0.06857
+0.2
+INFO:__main__:CTR achieved by the policy: 0.06667
+INFO:__main__:0.10323: 0.06667
+0.2
+INFO:__main__:CTR achieved by the policy: 0.06695
+INFO:__main__:0.10645: 0.06695
+0.2
+INFO:__main__:CTR achieved by the policy: 0.06698
+INFO:__main__:0.12581: 0.06698
+0.2
+INFO:__main__:CTR achieved by the policy: 0.06143
+INFO:__main__:0.14194: 0.06143
+0.2
+INFO:__main__:CTR achieved by the policy: 0.06227
+INFO:__main__:0.13548: 0.06227
+0.2
+INFO:__main__:CTR achieved by the policy: 0.06786
+INFO:__main__:0.13226: 0.06786
+0.2
+INFO:__main__:CTR achieved by the policy: 0.06208
+INFO:__main__:0.13871: 0.06208
+0.2
+INFO:__main__:CTR achieved by the policy: 0.06021
+INFO:__main__:0.14839: 0.06021
+0.2
+--- Tue Dec 26 20:23:14 CET 2017
+24201
+INFO:__main__:CTR achieved by the policy: 0.06868
+INFO:__main__:0.14516: 0.06868
+0.2
+INFO:__main__:CTR achieved by the policy: 0.06692
+INFO:__main__:0.12903: 0.06692
+0.2
+INFO:__main__:CTR achieved by the policy: 0.06114
+INFO:__main__:0.15484: 0.06114
+0.2
+INFO:__main__:CTR achieved by the policy: 0.06727
+INFO:__main__:0.17097: 0.06727
+0.2
+INFO:__main__:CTR achieved by the policy: 0.06102
+INFO:__main__:0.16452: 0.06102
+0.2
+INFO:__main__:CTR achieved by the policy: 0.06003
+INFO:__main__:0.17419: 0.06003
+0.2
+--- Tue Dec 26 20:45:45 CET 2017
+25637
+INFO:__main__:CTR achieved by the policy: 0.06693
+INFO:__main__:0.16774: 0.06693
+0.2
+INFO:__main__:CTR achieved by the policy: 0.06820
+INFO:__main__:0.16129: 0.06820
+0.2
+INFO:__main__:CTR achieved by the policy: 0.05956
+INFO:__main__:0.15806: 0.05956
+0.2
+INFO:__main__:CTR achieved by the policy: 0.06210
+INFO:__main__:0.15161: 0.06210
+0.2
+INFO:__main__:CTR achieved by the policy: 0.06998
+INFO:__main__:0.20000: 0.06998
+0.2
+--- Tue Dec 26 21:08:09 CET 2017
+INFO:__main__:CTR achieved by the policy: 0.06415
+INFO:__main__:0.17742: 0.06415
+0.2
+INFO:__main__:CTR achieved by the policy: 0.06439
+INFO:__main__:0.18710: 0.06439
+0.2
+INFO:__main__:CTR achieved by the policy: 0.06049
+INFO:__main__:0.18387: 0.06049
+0.2
+INFO:__main__:CTR achieved by the policy: 0.06226
+INFO:__main__:0.19355: 0.06226
+0.2
+INFO:__main__:CTR achieved by the policy: 0.06694
+INFO:__main__:0.19032: 0.06694
+0.2
+INFO:__main__:CTR achieved by the policy: 0.06249
+INFO:__main__:0.18065: 0.06249
+0.2
+INFO:__main__:CTR achieved by the policy: 0.06686
+INFO:__main__:0.19677: 0.06686
+0.2

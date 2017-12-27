@@ -6,7 +6,7 @@ OUT_FEATURES = ARTICLE_FEATURES * USER_FEATURES
 
 # DELTA = 0.01
 # ALPHA = 1.0 + np.sqrt(np.log(2.0/DELTA)/2.0)
-ALPHA = 0.2
+ALPHA = 0.135483870968
 print(ALPHA)
 
 A0 = np.eye(OUT_FEATURES)
@@ -31,7 +31,7 @@ def a_index(article_ids):
 def set_articles(articles, alpha=None):
     global ALPHA
     if alpha is not None:
-        ALPHA = alpha
+        ALPHA = float(alpha)
     # articles - dictionary of (about 80) article id -> features (of len 6)
     counter = len(articles)
     global xs, As, Ainvs, Bs, bs
@@ -59,8 +59,8 @@ def update(reward):
     # reward - int
     if reward == -1:
         return
-    elif reward == 0:
-        reward = -1
+    #elif reward == 0:
+    #    reward = -1
 
     global last_chosen_idx, last_z, A0, b0, A0inv, last_x
     A = As[last_chosen_idx]  # (ARTICLE, ARTICLE)
