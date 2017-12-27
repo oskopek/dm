@@ -29,9 +29,9 @@ def set_articles(articles, alpha=None):
     print(ALPHA)
 
     xs = np.zeros((counter, ARTICLE_FEATURES, 1))
-    Ms = np.zeros((counter, FEATURES**2, FEATURES**2))
-    Minvs = np.zeros((counter, FEATURES**2, FEATURES**2))
-    bs = np.zeros((counter, FEATURES**2, 1))
+    Ms = np.zeros((counter, FEATURES, FEATURES))
+    Minvs = np.zeros((counter, FEATURES, FEATURES))
+    bs = np.zeros((counter, FEATURES, 1))
 
     counter = 0
     for article_id, article in articles.iteritems():
@@ -39,9 +39,9 @@ def set_articles(articles, alpha=None):
         inv_indexes[counter] = article_id
 
         xs[counter, :, 0] = np.asarray(article)
-        Ms[counter] = np.eye(FEATURES**2)
-        Minvs[counter] = np.eye(FEATURES**2)
-        bs[counter] = np.zeros((FEATURES**2, 1))
+        Ms[counter] = np.eye(FEATURES)
+        Minvs[counter] = np.eye(FEATURES)
+        bs[counter] = np.zeros((FEATURES, 1))
 
         counter += 1
 
@@ -77,12 +77,12 @@ def recommend(time, user_features, choices):
     user = np.expand_dims(user, -1)
     # (n_choices, USER_FEATURES, 1)
 
-    xss = xs[idx]
-    xsT = np.transpose(xss, axes=(0, 2, 1))
-    z = np.matmul(user, xsT)
-    z = np.reshape(z, (n_choices, FEATURES**2, 1))
+    #xss = xs[idx]
+    #xsT = np.transpose(xss, axes=(0, 2, 1))
+    #z = np.matmul(user, xsT)
+    #z = np.reshape(z, (n_choices, FEATURES**2, 1))
 
-    #z = user
+    z = user
     zT = np.transpose(z, axes=(0, 2, 1))
 
     w = np.matmul(Minv, b)  # (n_choices, ARTICLE, 1)
