@@ -7,7 +7,7 @@ FEATURES = ARTICLE_FEATURES
 last_chosen_idx = None
 last_z = None
 
-ALPHA = 0.10944882
+ALPHA = 0.17480315
 
 indexes = dict()
 inv_indexes = dict()
@@ -51,8 +51,8 @@ def update(reward):
     if reward == -1:
         return
     # TODO
-    elif reward == 0:
-        reward = -1
+    #elif reward == 0:
+    #    reward = -1
 
     global last_chosen_idx, last_z
     Ms[last_chosen_idx] += np.matmul(last_z, last_z.T)
