@@ -2,12 +2,12 @@ import numpy as np
 
 USER_FEATURES = 6
 ARTICLE_FEATURES = 6
-FEATURES = ARTICLE_FEATURES
+FEATURES = ARTICLE_FEATURES + USER_FEATURES
 
 last_chosen_idx = None
 last_z = None
 
-ALPHA = 0.12283465
+ALPHA = 0.18627451
 
 indexes = dict()
 inv_indexes = dict()
@@ -77,12 +77,12 @@ def recommend(time, user_features, choices):
     user = np.expand_dims(user, -1)
     # (n_choices, USER_FEATURES, 1)
 
-    #xss = xs[idx]
-    #xsT = np.transpose(xss, axes=(0, 2, 1))
-    #z = np.matmul(user, xsT)
-    #z = np.reshape(z, (n_choices, FEATURES**2, 1))
+    xss = xs[idx]
+    z = np.zeros((n_choices, FEATURES, 1))
+    z[:,:ARTICLE_FEATURES,:] = user
+    z[:,ARTICLE_FEATURES:,:] = xss
 
-    z = user
+    #z = user
     zT = np.transpose(z, axes=(0, 2, 1))
 
     w = np.matmul(Minv, b)  # (n_choices, ARTICLE, 1)
