@@ -7,7 +7,6 @@ OUT_FEATURES = ARTICLE_FEATURES * USER_FEATURES
 # DELTA = 0.01
 # ALPHA = 1.0 + np.sqrt(np.log(2.0/DELTA)/2.0)
 ALPHA = 0.135483870968
-print(ALPHA)
 
 A0 = np.eye(OUT_FEATURES)
 A0inv = np.eye(OUT_FEATURES)
@@ -32,6 +31,7 @@ def set_articles(articles, alpha=None):
     global ALPHA
     if alpha is not None:
         ALPHA = float(alpha)
+    print(ALPHA)
     # articles - dictionary of (about 80) article id -> features (of len 6)
     counter = len(articles)
     global xs, As, Ainvs, Bs, bs
