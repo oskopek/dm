@@ -1,0 +1,391 @@
+% Data Mining HS 2017, Ondrej Skopek
+% This work is licensed under a Creative Commons Attribution 4.0 International License.
+%
+% Adapted from:
+%
+% 1. Taivo Pungas; https://github.com/taivop/eth-dm
+% 2. Vincent Ulitzsch, et al.; https://github.com/viniul/Data-Mining-Cheat-Sheet-ETHZ
+%    Copyright for template: \copyright\ 2014 Winston Chang
+%    \href{http://www.stdout.org/~winston/latex/}{http://www.stdout.org/$\sim$winston/latex/}
+%    Cheat Sheet By Vincent Ulitzsch and Mario Gersbach
+
+\documentclass[11pt,landscape]{article}
+\usepackage[scaled]{helvet}
+\usepackage{multicol}
+\usepackage{calc}
+\usepackage{ifthen}
+\usepackage[landscape]{geometry}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{algorithmicx}
+\usepackage[noend]{algpseudocode}
+\setlist{nolistsep}
+\usepackage{titlesec}
+\ifthenelse{\lengthtest { \paperwidth = 11in}}
+    { \geometry{top=.5in,left=.5in,right=.5in,bottom=.5in} }
+    {\ifthenelse{ \lengthtest{ \paperwidth = 297mm}}
+        {\geometry{top=1cm,left=1cm,right=1cm,bottom=1cm} }
+        {\geometry{top=1cm,left=1cm,right=1cm,bottom=1cm} }
+    }
+
+\algnewcommand\algorithmicforeach{\textbf{for each}}
+\algdef{S}[FOR]{ForEach}[1]{\algorithmicforeach\ #1\ \algorithmicdo}
+
+% Turn off header and footer
+\pagestyle{empty}
+\titlespacing{\section}{0pt}{\parskip}{-\parskip}
+
+% Redefine section commands to use less space
+\makeatletter
+\renewcommand{\section}{\@startsection{section}{1}{0mm}%
+                                {-1ex plus -.5ex minus -.2ex}%
+                                {0.5ex plus .2ex}%x
+                                {\normalfont\normalsize\bfseries}}
+\renewcommand{\subsection}{\@startsection{subsection}{2}{0mm}%
+                                {-1explus -.5ex minus -.2ex}%
+                                {0.5ex plus .2ex}%
+                                {\normalfont\normalsize\bfseries}}
+\renewcommand{\subsubsection}{\@startsection{subsubsection}{3}{0mm}%
+                                {-1ex plus -.5ex minus -.2ex}%
+                                {1ex plus .2ex}%
+                                {\normalfont\small\bfseries}}
+\makeatother
+
+% Define BibTeX command
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+% Don't print section numbers
+\setcounter{secnumdepth}{0}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt plus 0.5ex}
+
+\setlength{\abovedisplayskip}{0pt}
+\setlength{\belowdisplayskip}{0pt}
+\setlength{\abovedisplayshortskip}{0pt}
+\setlength{\belowdisplayshortskip}{0pt}
+
+% -----------------------------------------------------------------------
+
+\begin{document}
+
+\raggedright
+\footnotesize
+\begin{multicols}{3}
+
+% multicol parameters
+% These lengths are set only within the two main columns
+%\setlength{\columnseprule}{0.25pt}
+\setlength{\premulticols}{1pt}
+\setlength{\postmulticols}{1pt}
+\setlength{\multicolsep}{0pt}
+\setlength{\columnsep}{0.5pt}
+
+\section{General Remarks}
+\begin{tabular}{ l c  }
+$\mathrm{d}(x, y) = ||x - y||$, & $\mathrm{dist}(x, y) = 1 - \mathrm{sim}(x, y)$\\
+$l_2$-euclidean distance & $\sqrt{\sum_{i=1}^d (x_i-y_i)^2}$ \\
+$l_1$-manhatten distance & $\sum_{i=1}^d \left|x_i-y_i\right|$\\
+$l_p$-distance & $(\sum_{i=1}^d |x_i-y_i|^p)^{1/p}$ \\
+$l_\infty$-distance & $\max_i | x_i - y_i| $ \\
+Mahalanobis norm & $||w||^2_G = ||Gw||^2_2$ \\
+Cosine-Similarity & $\cos \frac{x^T y}{||x||_2 ||y||_2}$ \\
+Jaccard-Distance & $1-\text{sim}(A,B) = 1 - \frac{|A \cap B|}{|A \cup B|}$
+\end{tabular}
+
+\subsection{Function Properties}
+\begin{description}
+    \item[Concave function] $f(a + s) - f(a) \geq f(b + s) - f(b)~\forall a \leq b, s > 0$
+    \item[Convex functions] A function $f: S \rightarrow \mathbb{R}$, $S \subseteq \mathbb{R}^d$,
+        is called convex if $\forall x,x' \in S, \lambda \in [0,1]$ it holds that
+    $\lambda f(x) + (1 - \lambda) f(x') \geq f(\lambda x + (1 - \lambda) x')$
+    \item[H-strongly convex]
+    $f(x') \geq f(x) + \nabla f(x)^T (x'-x) + \frac{H}{2} ||x' -x||^2, H > 0$\\
+    1-D: $f$ is H-sc $\Leftarrow f''(x) \geq H, \forall x$.\\
+    $d$-D: $f$ is H-sc $\Leftarrow$ $\lambda_{\min}(\nabla^2 f(x)) \geq H, \forall x$.
+    \item[Subgradients] Given a convex not necessarily differentiable function f, a subgradient $g_x \in \nabla f(x)$ is the slope of a linear lower bound of f, tight at x, that is
+    $\forall x' \in S \colon f(x') \geq f(x) + g^T_x(x' - x)$
+\end{description}
+
+\section{Locality Sensitive Hashing}
+    \begin{description}
+        \item[Near-duplicate detection] $ \{ (x,y) \in X \times X : x \neq y, \text{d}(x,y) \leq \epsilon \}$
+        \item[$(r,\epsilon)$-neighbour search]
+        Find all points with distance $\leq r$ and no points with distance $> (1+ \epsilon)r$ from query q.
+        Pick $(r,(1+\epsilon) \cdot r,p,q)$-sensitive family and boost.
+        \item[Min-hashing] $h(C) = h_{\pi}(C) = \min_{i : C(i) = 1} \pi(i)$
+            \subitem $\pi(i) = h_{a, b}(i) = ((a \cdot i + b) \mod p) \mod N)$,
+        $p \text{ prime (fixed) } > N$, $N$ number of documents
+            \hrule
+            \begin{algorithmic}[1]
+\For {each column $c$}
+    \For {each row $r$}
+        \If {$c$ has 1 in row $r$}
+            \For {each hash fn $h_i$}
+                \State $M_{i,c} \gets \min\{h_i(r), M_{i,c}\}$
+            \EndFor
+        \EndIf
+    \EndFor
+\EndFor
+\end{algorithmic}
+        \item[Band-hashing] Signature matrix into b bands of r hash fns,
+            per-column into b hash tables. If any h-table has a collision,
+            report candidate pair. $s^r$ prob of col on band j: $P(\text{col in } \geq 1 \text{ band}) = 1-(1-s^r)^b$
+        \item[$(d1,d2,p1,p2)$-sensitivity] Assume $d_1<d_2$, $p_1>p_2$.
+                $\forall x,y \in S: d(x,y) \leq d_1 \Rightarrow Pr[h(x)=h(y)] \geq p_1$\\
+                $\forall x,y \in S: d(x,y) \geq d_2 \Rightarrow Pr[h(x)=h(y)] \leq p_2$
+        \item[r-way AND] $h(x)=h(y) \iff \forall i : h_i(x)=h_i(y)$
+            $(d_1,d_2,p_1^r,p_2^r)$ -- big r, more FN
+        \item[b-way OR] $h(x)=h(y) \iff \exists i : h_i(x)=h_i(y)$
+            $(d_1,d_2,1-(1-p_1)^b,1-(1-p_2)^b)$ -- big b, more FP
+        \item[AND-OR cascade] $(d_1,d_2,1-(1-p_1^r)^b,1-(1-p_2^r)^b)$
+        \item[OR-AND cascade] $(d_1,d_2,(1-(1-p_1)^b)^r,(1-(1-p_2)^b)^r)$
+    \end{description}
+\subsection{Hash Functions}
+\begin{description}
+    \item[Euclidean distance] $h_{w,b}(x) =  \lfloor (\frac{w^Tx-b}{a}) \rfloor$
+where $w \leftarrow \frac{w}{||w||_2}$, $w \sim \mathcal{N}(0,I)$, $w_i \sim \mathcal{N}(0,1)$, $b \sim Unif([0,a])$, yields $(a/2,2a,1/2,1/3)$-sensitive
+    \item[Cosine distance] $\mathcal{H} = \{ h(v) = \text{sgn}(w^Tv) \}$ where
+        $w \sim \text{Unif} \{ x \in \mathbb{R}^n : ||x||_2 = 1 \}$
+        $Pr(h_u(x) = h_v(y)) = 1 - \Theta_{x, y}/\pi$
+\end{description}
+
+\section{Support Vector Machines}
+\begin{description}
+    %\item[Linear Classifier] $y = \text{sign} \left ( w^T x +b \right )$. Train classifier $\sim$ find $w$.
+    %Want: $y_i w^T x_i > 0~\forall i$ for linearly separable data.
+    \item[SVM] SVM = Max margin linear classifier
+    $\min_{w, \xi \geq 0} \frac{1}{2} w^T w + C \sum_{i=1}^{n} \xi_i \text{ s. t. } y_i w^T x_i \geq 1 - \xi_i~\forall i$
+    Support vectors (SV) are all data points on the margin and data points with non-zero slack
+        \item[Regularized hinge loss formulation] $C = 1/\lambda$
+            $\min_w \lambda w^T w + C \sum_{i} \max(0,1-y_i w^T x_i)$
+        \item[Norm-constrained hinge loss minimization]
+            $ \min_w \sum_{i} \max(0,1-y_iw^Tx_i)$ s.t. $||w||_2 \leq \frac{1}{\sqrt{\lambda}}$
+        \item[Strongly convex formulation]
+            $ \min_w \frac{1}{T} \sum_{t=1}^{T} \left ( \frac{\lambda}{2} ||w||_2^2 + \max(0,1-y_t w^T x_t) \right )$\\ s.t. $ ||w||_2 \leq \frac{1}{\sqrt{\lambda}}$\\
+            $\text{Proj}_S(w) = w \cdot \min\left(1, \frac{1/\sqrt{\lambda}}{||w||}\right)$
+    \end{description}
+    \textbf{Small $C$, Big $\lambda$:} Greater margin, more misclassification
+
+\subsection{Kernels}
+\begin{description}
+    \item[Dual SVM Formulation]
+    $\max_{\alpha} \sum_{i=1}^{n} \alpha_i - \frac{1}{2} \sum_{i,j} \alpha_i \alpha_j y_i y_j x_i^T x_j$\\ s.t. $ 0 \leq \alpha_i \leq C$\\
+    $\Rightarrow$ optimal w: $ w^{\ast} = \sum_{i} \alpha_i^{\ast} y_i x_i = \sum_{i \in \text{SV}} \alpha_i^{\ast} y_i x_i $
+\item[Kernel trick] Substitute inner product $x_{i}^T x_{j}$ in dual formulation and in classification function with $k(x_{i}, x_{j}) = \phi(x_{i})^T \phi(x_{j})$, where $\phi(\cdot): \mathbb{R}^d \to \mathbb{R}^{>d}$
+    \item[Kernel functions] A kernel is function $k: X \times X \rightarrow \mathbb{R}$:
+        \begin{enumerate}
+            \item Symmetry: $\forall x,x' \in X : k(x,x') = k(x',x)$
+            \item PSD: $\forall n \in \mathbb{N}$, any set $S = \{x_1,..,x_n\} \subseteq X$, the Gram matrix is PSD.
+        \end{enumerate}
+    \end{description}
+
+\subsubsection{Random Features (Inverse Kernel Trick)}
+% $$x \in \mathbb{R}^d \overset{\text{kernel trick}}{\rightarrow} \Phi(x) \in \mathbb{R}^D \overset{\text{Inverse Kernel Trick}}{\rightarrow} z(x) \in \mathbb{R}^m$$ where $d << D$,$m<<D$,$m>d$.
+\begin{description}
+    \item[Shift-invariant kernel] $k(x,y) = k'(x-y)$. Then the kernel has Fourier transform, such that:
+    $$ k(x-y) = \int_{\mathbb{R}^d} p(w) \cdot e^{i w^T (x-y)} dw $$
+    where $p(w)$ is the Fourier transformation, i.e. we map $k(s)$ to another function $p(w)$.
+    \item[Random fourier features (prerequisites)] Interpret kernel as expectation
+    $ k(x-y) = $
+    $$\int_{\mathbb{R}^d} p(w) \cdot \underbrace{e^{i w^T (x-y)}}_{g(w)} dw = \mathbb{E}_{w,b} \left [ z_{w,b} (x) z_{w,b} (y) \right ]$$
+    where $z_{w,b}(x) = \sqrt{2} \cos \left (w^T x +b \right )$,\\
+    $b \sim U([0,2 \pi])$, $w \sim p(w)$
+
+\item[Random fourier features] \textbf{(kernel approximation)}\\
+    \begin{enumerate}
+        \item $w_i \sim p, b_i \sim U([0, 2\pi])$ for $i = 1, \ldots, m;$ iid
+        \item $z(x) = [z_{w_1,b_1}(x),...,z_{w_m,b_m}(x)]/\sqrt{m}$
+        \item $z(x)^T z(y) = \frac{1}{m} \sum_{i=1}^{m} z_{w_i,b_i} (x) \cdot     z_{w_i,b_i} (y)$
+        \item If $m \rightarrow \infty$, then (almost surely) $z(x)^T z(y)     \rightarrow  \mathbb{E}_{w,b} ( z_{w,b}(x) \cdot z_{w,b} (y) ) = k(x-y)$
+    \end{enumerate}
+\end{description}
+
+\section{Online Convex Programming}
+\begin{description}[leftmargin=*]
+    \item[Regret] $R_T = (\sum_{t=1}^{T} f_t(w_t)) - \min_{w \in S} \sum_{t=1}^{T} f_t(w)$
+    \item[No-regret] $\lim_{T \rightarrow \infty}\frac{R_T}{T} \rightarrow 0$
+    \item[Online convex programming (OCP)] 
+        If $y_t w_t^Tx_t < 1:$
+        $w_{t+1} = \text{Proj}_S( w_t - \eta_t \nabla f_t(w_t))$\\
+        $\text{Proj}_S(w) = \text{arg}\min_{w' \in S} ||w' - w ||_2 = \min \left(w, \frac{w}{\lambda||w||_2}\right)$
+    \item[Regret for OCP] $$ \frac{R_T}{T} \leq \frac{1}{\sqrt{T}} [||w_0 - w^*||_2^2 + ||\nabla f||_2^2] $$ where $||\nabla f||_2^2 = \sup_{w \in S, t \in \{1,\dots,T\}} ||\nabla f(w)||_2^2 $
+    \item[Parallel stochastic gradient descent]
+    \begin{enumerate}
+        \item Split data into $k$ subsets, $k =$ number of machines, want $k = O(1/\lambda)$
+        \item Each machine produces $w_i$ on its subset
+        \item After T iterations, compute $w = \frac{1}{k} \sum_{i = 1}^k w_i$
+    \end{enumerate}
+    \item[PEGASOS] Online SVM: H-sc. lossfn. Minibatch + reg
+\end{description}
+
+\section{Active Learning}
+\begin{description}
+    \item[Uncertainty sampling] Repeat until we can infer all remaining labels:
+    \begin{enumerate}
+        \item Assign uncertainty score $U_t(x)$ to each unlabeled data point:
+        $U_t(x) = U \left ( x | x_{1:t-1},y_{1:t-1} \right )$
+        \item Greedily pick the most uncertain point and request label
+        $x_t = \text{arg } \max_x U_t(x)$ and retrain classifier
+    \end{enumerate}
+    \item For SVM: $U_t(x) = \frac{1}{|w_{t-1}^T x|}$
+    \item Cost to pick $m$ labels: $m \cdot n \cdot d + m \cdot C(m)$\\
+        $n =$ number of data points, $d =$ dimensions,\\
+        $C(m) =$ cost to train classifier
+
+    \item[Hashing a hyperplane query] Draw $u,v \sim \mathcal{N}(0,I)$. Then resulting two-bit hash is:
+    $$ h_{u,v}(a,b) = \left [ \text{ sign }(u^T a),\text{ sign }(v^T b) \right ]$$
+    Define the hash family:
+    $$
+    h_{\mathcal{H}}(z) = \begin{cases}
+        h_{u,v} (z,z) & \text{if $z$ is a database point vector} \\
+        h_{u,v} (z,-z) & \text{if $z$ is a query hyperplane vector}
+    \end{cases}$$
+    \item[Version space] Set of all classifiers consistent with the data:
+        $V(D) = \{w : \forall (x,y) \in D : \text{ sign}(w^T x) = y \}$
+    \item[Relevant version space] $\hat{V}(D;U)$ describes all possible labelings $h$ of all unlabeled data $U$ that are still possible under some model $w$, or,
+    \begin{align*}
+        \hat{V}(D;U) &= \{h: U \rightarrow  \{+1,-1\}  : \exists w  \in V(D)\\
+        &\forall x \in U : \text{sign}(w^T x) = h(x) \}
+    \end{align*}
+\item[Generalized Binary Search] (GBS)\\
+    \begin{algorithmic}[1]
+        \State {Start with $D = \emptyset$}
+        \While {$|\hat{V}(D;U)| > 1$}
+            \ForEach {unlabeled example x in $U$}
+                \State {$ v^+(x) = |\hat{V}(D \cup \{(x,+)\}; U)|$}
+                \State {$ v^-(x) = |\hat{V}(D \cup \{(x,-)\}; U)|$}
+                \State \Comment number of labelings still left if $x$ is $-$/$+$
+            \EndFor
+            \State {Pick $x^{\ast} = \text{arg}\min_{x} \max(v^-(x),v^+(x))$}
+            \State $D = D \cup \{x^\ast\}$
+        \EndWhile
+    \end{algorithmic}
+\item[Decision rules] for GBS SVM, $m \sim$ margin\\
+    \begin{description}
+        \item[Max-min margin] $\max_x \min \left( m^+(x),m^-(x) \right)$
+        \item[Ratio margin] $\max_x \min \left (\frac{m^+(x)}{m^-(x)},\frac{m^-(x)}{m^+(x)} \right)$
+    \end{description}
+\end{description}
+
+\section{Clustering}
+\subsection{K-Means}
+\begin{description}
+    \item[Cost Function] $L(\mu) = L(\mu_1,....,\mu_k) =$\vspace{-0.5em}
+        $$\vspace{-0.5em}\sum_{i=1}^N \underbrace{\min_{j \in \{1,\dots,k\}} ||x_i- \mu_j ||_2^2}_{d(\mu, x_{i})}$$
+    \item[Objective] $\mu^*  = \text{arg } \min_{\mu} L(\mu)$
+    \item[Algorithm] Until convergence:\\
+        \begin{algorithmic}[1]
+        \State {Assign each point $x_{i}$ to closest center
+            $$z_i \leftarrow \text{arg } \min_{j \in \{1,\dots,l\}} ||x_{i} - \mu_{j}^{(t-1)}||_2^2$$}
+        \State {Update center as mean of assigned data points
+            $$\mu_j^{(t)} \leftarrow \frac{1}{n_j} \sum_{i: z_i = j} x_i$$}
+    \end{algorithmic}
+
+    \item[Online k-means algorithm]
+        $$\frac{\textbf{d} \text{d}(\mu, x_t)}{\textbf{d} \mu_j} =
+        \begin{cases}
+            0 & \text{if }  j \notin \text{arg} \min_i ||\mu_i-x_t||^2 \\
+            2(u_j-x_t) & \text{else}
+        \end{cases}$$
+    \begin{enumerate}[leftmargin=*]
+         \item Initialize centers randomly
+         \item For $t=1:N$
+            \begin{itemize}
+                \item Find $c = \text{arg } \min ||\mu_j - x_t ||_2$
+                \item $\mu_c = \mu_c + \eta_t (x_t - \mu_c)$
+            \end{itemize}
+        \item For convergence:
+        $ \sum_t \eta_t = \infty$ and $\sum_t \eta_t^2 < \infty$, e.g. $\eta_t = \frac{c}{t}$.
+     \end{enumerate}
+\end{description}
+
+\subsection{Coresets}
+\begin{description}
+    \item[Key idea] Replace many points by one weighted representative, thus, obtain C
+    $ L_k(u;C) = \sum_{(w,x) \in C} w \cdot \min_j || u_j - x ||_2^2$
+    \item[$(k,\epsilon)$-coreset] $C$ is called a $(k,\epsilon)$-coreset for $D$, if for all $\mu$:
+    $(1-\epsilon) L_k(\mu;D) \leq L_k(\mu;C) \leq (1+\epsilon) L_k(\mu;D)$
+\item[Operations]\textbf{Merge}: union of two $(k,\epsilon)$-csets is a $(k, \epsilon)$-cset\\
+    \textbf{Compress}: $(k,\delta)$-cset of a $(k, \epsilon)$-cset of $D$ is a $(k, \epsilon + \delta + \epsilon\delta)$-cset of $D$
+\item[Construction]
+    \textbf{$D^2$-sampling}: iteratively build $B = \emptyset$ by sampling $\propto \frac{\text{d}(x, B)^2}{\sum_{x' \in X} \text{d}(x', B)^2}$\\
+    \textbf{Importance sampling}: $\propto \frac{\alpha \text{d}(x, B)^2}{c_\Phi} + \frac{2\alpha\sum_{x' \in B_x} \text{d}(x', B)^2}{|B_x|c_Phi} + \frac{4|X|}{|B_x|}$
+        where $c_\Phi = \frac{1}{|X|}\sum_{x \in X}\text{d}(x, B)^2$\\
+        $B_x = $ pts in $X$ that belong to same cluster as $x$
+\end{description}
+
+\section{Bandits}
+\begin{description}
+    \item[Regret] $R_T = \sum_{t=1}^T (\mu^* - \mu_{i_t})$, $i_t$ chosen arm at time $t$
+    \item[$\epsilon$-greedy] The algorithm goes as follows:
+    \begin{enumerate}
+        \item Set $\epsilon_t = \mathcal{O}(\frac{1}{t})$
+        \item With probability $\epsilon_t$: explore by picking uniformly at random
+        \item With probability $1 - \epsilon_t$: exploit by picking arm with highest empirical mean
+    \end{enumerate}
+    Regret: $R_T = \mathcal{O}(k \log(T))$
+\end{description}
+\subsection{UCB1 \& LinUCB}
+\begin{description}
+    \item[Hoeffding's inequality] $\Pr(|\mu - \frac{1}{m} \sum_{t=1}^m X_t | \geq b) \leq 2 \cdot \exp(-2b^2m)$
+    \item[Confidence bound]: Want: Hoeffding $\leq \delta$
+        $\Rightarrow b = \sqrt{\frac{1}{2m}\ln\frac{2}{\delta}}$
+    \item[UCB/Mean update]
+    $UCB(i) = \hat{\mu_i}+ \sqrt{\frac{2 \ln t}{\eta_i}}$
+        $j = \text{arg}\max_i UCB(i)$\\
+    $\hat{\mu_j} = \hat{\mu_j} + \frac{1}{\eta_j} (y_t - \hat{u}_j)$
+    \item[Contextual bandits] Reward is now $y_t = f(x_t,z_t) + \epsilon_t$ with $z_t$ user features. For us: $f(x_i,z_t) = w^T_{x_i}z_t$
+    \item[LinUCB (disjoint)] RidgeRegression on $z_t$,
+        $\hat{w}_i = (D_i^TD_i + I)^{-1}D_i^Ty_i$.\\
+        $|\hat{w}_i^Tz_t - w_i^Tz_t| \leq \alpha \sqrt{z_t^T(D_i^TD_i)^{-1}z_t}$ with
+        probability $1-\delta$ if $\alpha = 1 + \sqrt{\log(2/\delta)/2}$\\
+        $R_T/T = O(d \cdot d' \cdot \text{poly}\log T / \sqrt{T})$
+    \item[Hybrid model] Reward is now $y_t = w^T_{x_t} z_t + \beta^T \phi(x_t,z_t) + \epsilon_t$
+    \item[Rejection sampling] First obtain data log through pure exploration, and then reiterate:
+    \begin{enumerate}
+        \item Get event $(x_t^{(1)},..,x_t^{(k)},z_t,a_t,y_t)$ from log
+        \item Use algorithm that is testing to pick $a_t'$:
+        \begin{itemize}
+            \item If $a_t'  = a_t$
+            $\Rightarrow$ Feed back reward $y_t$
+            \item Else ignore log line
+        \end{itemize}
+        \item Stop when T rewards have been fed back
+    \end{enumerate}
+\end{description}
+
+\subsection{Submodular Functions}
+\begin{description}
+    \item[Submodulatity] A function $F: 2^V \mapsto \mathbb{R}$ is called submodular iff for all $A \subseteq B, s \notin B$:
+        $$F(A \cup \{s\}) - F(A) \geq F(B \cup \{s\}) - F(B)$$
+    \item[Closure properties] $F, F_i$ submodular on $V$; $S, W \subseteq V$
+    \begin{description}
+        \item[Linear] \textbf{Combinations}\\ $F'(S) = \sum_{i} \lambda_i F_i(S)$, $\lambda_i \geq 0$
+        \item[Restriction] $F'(S) = F(S \cap W)$
+        \item[Conditiong] $F'(S) = F(S \cup W)$
+        \item[Reflection] $F'(S) = F(V \setminus S)$
+    \end{description}
+    \item[Min/Max] For $F_{1,2}(A)$, $\max \{F_1(A),F_2(A) \}$ or $\min \{F_1(A),F_2(A) \}$ \textbf{not} submodular in general.
+    \item[Concavity]
+    $F(A) = g(|A|)$ where $g: \mathbb{N} \mapsto \mathbb{R}$, then $F$ submodular iff $g$ concave.
+\item[Lazy Greedy] Optimizing submodular \textbf{monotonic} functions.
+    \begin{algorithmic}[1]
+    \State {$A_0 = \emptyset$.
+        Keep ordered list of marginal benefits $\Delta_i$ from previous iterations
+        }
+        \For {$i = 1 \ldots k:$}
+            \State {$\Delta_i = F(A_{i-1} \cup \{\text{top element}\}) - F(A_{i-1})$}
+            \If {$i$ is not top element anymore}
+            \State{re-sort the list}
+            \EndIf
+            \State {$A_i = A_{i-1} \cup \{\text{top element}\}$}
+        \EndFor
+\end{algorithmic}
+\end{description}
+
+\end{multicols}
+\end{document}

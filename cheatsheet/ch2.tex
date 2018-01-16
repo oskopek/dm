@@ -1,0 +1,427 @@
+\documentclass[10pt,parskip]{scrartcl}
+
+\usepackage{calc}
+\usepackage[landscape,paper=a4paper,left=6mm, right=6mm,top=6mm, bottom = 6mm,includehead,headheight=0mm,headsep=0mm]{geometry}
+\usepackage{multicol}
+\usepackage[alwaysadjust]{paralist}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{multirow}
+
+\renewcommand\familydefault{\rmdefault}
+\usepackage[]{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{empheq}
+\usepackage{color}
+\usepackage{graphicx}
+
+\usepackage{mdframed}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+
+\graphicspath{/}
+
+ %PLATZSPAAREN SPACING 
+\setlength{\parskip}{0pt}
+\setlength{\parsep}{0pt}
+
+\usepackage[]{titlesec} % SPACING überall definieren
+\titlespacing*{\section}{0pt}{0pt}{5pt} %indent,space befor, space after
+\titlespacing*{\subsection}{0pt}{0.2cm}{0pt}
+\titlespacing*{\subsubsection}{0pt}{0.15cm}{0pt}
+\titleformat*{\section}{\fontencoding{OT1}\fontfamily{cmr} \fontseries{bx}\fontshape{sc} \fontsize{15pt}{15pt} \selectfont} %italic
+\titleformat*{\subsection}{\fontencoding{OT1}\fontfamily{cmr} \fontseries{bx}\fontshape{sc} \fontsize{10pt}{10pt} \selectfont} %italic
+\titleformat*{\subsubsection}{\fontencoding{OT1}\fontfamily{cmr} \fontseries{bx}\fontshape{sc} \fontsize{9pt}{9pt} \selectfont} %italic
+\def\thesection{}
+\def\thesubsection{\arabic{subsection}}
+
+\include{macros} %Macros reinladen
+\include{def}
+
+%\setlength\headsep{9pt}
+\setlength\columnseprule{0.5pt}
+
+%\setlength{\abovedisplayskip}{0pt}
+%\setlength{\abovedisplayshortskip}{2pt}
+%\setlength{\belowdisplayskip}{5pt}
+%\setlength{\belowdisplayshortskip}{2pt}
+
+%Header
+
+%++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+\newcommand{\E}{\textrm{E}}
+\newcommand{\V}{\textrm{Var}}
+\newcommand*{\horzbar}{\rule[.5ex]{2.5ex}{0.5pt}}
+
+\begin{document}
+\begin{multicols*}{3}
+%\section*{Summary}
+\subsection{LSH} % (fold)
+\label{sub:lsh}
+\subsubsection{Min Hashing} % (fold)
+\label{ssub:min_hashing}
+$h_\pi(C) = \min_i \pi(i)$ first row in randomly shuffled column that contains a one. \\
+$P(h(C_1)=h(C_2)) = sim_J(C_1,C_2)$ Jaccard similarity \\
+Shuffling implemented with hash function $\pi(i) = a i + b \mod n$ 
+\begin{mdframed}
+	\begin{algorithmic}
+		\For {each column c}
+			\For {each row r}
+				\If {c has 1 in row r}
+				 	\For {each hash function $h_i$}
+						 \State $M(i,c) \gets \min  \{ h_i(r),M(i,c) \} $
+					\EndFor
+				\EndIf
+			\EndFor
+		\EndFor
+	\end{algorithmic}
+\end{mdframed}
+\subsubsection{Hashing Signature Matrix} % (fold)
+\label{ssub:hashing_signature_matrix}
+	M partitioned into b bands of r rows.  Probability C1,C2 collide on at least one band: $1-(1-s^r)^b$
+	
+	Family of hash functions F is $(d_11,d_2,p_1,p_2)$ sensitive if
+	$$
+	\forall x,y \in S : d(x,y) \leq d_1 \implies P[h(x)=h(y)] \geq p_1 \\
+	\forall x,y \in S : d(x,y) \geq d_2 \implies P[h(x)=h(y)] \leq p_2
+	$$
+	\tabcolsep=0.11cm\begin{tabular}{l l l l}
+		\textbf{r-way and:} & For $h=[h_1,\cdot,h_r]$ & $h(x)=h(y) \leftrightarrow h_i(x)=h_i(y)$ & $\forall i$
+	\end{tabular} \\
+	F' is $(d_1,d_2,p_1^r,p_2^r)$ sensitive
+	
+	\tabcolsep=0.11cm\begin{tabular}{l l l l}
+		\textbf{b-way or:} & For $h=[h_1,\cdot,h_b]$  & $h(x)=h(y) \leftrightarrow h_i(x)=h_i(y)$ & for some i
+	\end{tabular} \\
+	F' is $(d_1,d_2,1-(1-p_1)^b,1-(1-p_2)^b)$ sensitive
+% subsubsection hashing_signature_matrix (end)
+% subsubsection min_hashing (end)
+\subsubsection{Other Distance Functions} % (fold)
+\label{ssub:other_distance_functions}
+\textbf{Cosine distance: } Family of hash functions for uniformly random vector u \\
+$h_u(x) = \textrm{sign}(u^Tx)$ \qquad $P(h_u(x)=h_u(y)) = 1 - \frac{\theta_{x,y}}{\pi}$ \\
+\textbf{Euclidean distance: } Family functions for random line divided into a buckets. If distance $d=||x-y||_2>>a$, $h(x)=h(y)$ with low probability.  F forms a $(\frac{a}{2},2a,\frac{1}{2},\frac{1}{3})$ sensitive family. 
+% subsubsection other_distance_functions (end)
+% subsection lsh (end)
+
+% section ls (end)
+\subsection{Supervised Learning}
+\subsubsection{Canonical hyperplanes} % (fold)
+\label{ssub:canonical_hyperplanes}
+$x' = \bar{x} + \frac{w}{||w||} \gamma$ \\
+$w^T x' + b = w^T \bar{x} + b + \frac{w^T w}{||w||} \gamma = 1 $\\
+$\gamma = 1/ ||w||$
+% subsubsection canonical_hyperplanes (end)
+\subsubsection{Formulations} % (fold)
+\label{ssub:formulations}
+\begin{empheq}[innerbox=\fbox]{gather*}
+\min_{w,b} w^T w \quad s.t. \ y_i (w^T x_i + b) \geq 1 \\
+\min_{w,b} w^T w + C \sum_i \xi_i \quad \textrm{s.t.} \ y_i (w^T x_i + b) \geq 1 - \xi_i\\
+\min_{w,b} w^T w + C \sum_i \max\{0,1-y_i(w^Tx_i+b)\} \\ 
+\min_{w,b} \lambda w^T w + \sum_i \max\{0,1-y_i(w^Tx_i+b)\} \\
+\min_{w,b} \sum_i \max\{0,1-y_i(w^Tx_i+b)\} \quad \textrm{s.t.} \ ||w|| < 1/\lambda
+\end{empheq}
+% subsubsection formulations (end)
+\subsubsection{Online Convex Programming} % (fold)
+\label{ssub:online_convex_programming}
+Regret: $ R_T = \sum_{t=1}^T l_t - \min_w \sum_{t=1}^T f_t(w)$ \\
+OCP Regret: $R_T \leq \frac{||S||^2\sqrt{T}}{2} + (\sqrt{T}-1/2) || \nabla f||^2$  for $\eta_t = 1 / \sqrt{t}$ \\
+\begin{empheq}[innerbox=\fbox]{align*}
+&\textrm{If new point violates margin } y_t (w_t x_t + b) < 1 \\ 
+&\textrm{Update} \ w_{t+1} = w_t - \eta_t \nabla f_t(w_t) \\
+&\textrm{Project}\ \min \{w,\frac{w}{||w|| \lambda} \}
+\end{empheq}
+% subsubsection online_convex_programming (end)
+\subsubsection{Modifications} % (fold)
+\label{ssub:modifications}
+
+\begin{itemize}
+	\item \textbf{SGD:} training samples picked at random.
+	\item \textbf{PEGASOS:} uses minibatch of random samples, loss function with $\lambda/T w^T w$ term. Strongly convex loss function for better convergence.
+	\item \textbf{PSGD:} randomly partition data to k machines which run SGD independently.  After T iterations take weighted sum of obtained weights.\\
+	$w_T = \frac{1}{k} \sum_{i=1}^k w_i$.  Parallelization helps if $k = O(1/\lambda)$ \\
+	\item \textbf{L1-ball projection: } $Proj_S(w) = \arg\min_{||w'||_1\leq c}||w'-w||_2$ using $w_i=\mathrm{sign}(w_i)\max\{w_i-\beta,0\}$
+	\item \textbf{multi-class: } $l(W,(x,y))= \max_{r\in k \backslash y}[1 - (Wx)_y + (Wx)_r]_+$
+\end{itemize}
+% subsubsection modifications (end)
+\subsubsection{Feature selection} % (fold)
+\label{ssub:feature_selection}
+\textbf{L1 regularization:} replace $||w||_2$ with $||w||_1$ for sparse solutions. \\
+modified projection: $\bar{w}_i = \mathrm{sign}(w_i) \max\{|w_i|-\beta,0\}$ where $\beta$ is computed in linear time.
+% subsubsection feature_selection (end)
+
+\subsection{Active Learning} % (fold)
+\label{sub:active_learning}
+Pick most uncertain points for labeling 
+$x^{\ast} = \arg\min_{x_i\in U}|w^Tx_i$ \\
+\subsubsection{Hashing a Hyperplane} % (fold)
+\label{ssub:hashing_a_hyperplane}
+$$
+h_{u,v} = [h_u(a),h_v(b)] = [\mathrm{sign}(u^Ta),\mathrm{sign}(v^Tb)] \qquad u,v ~ \mathcal{N}(0,1)
+$$
+\textbf{Hash family: } $h_{u,v}(z) = \begin{cases}
+	h_{u,v}(z,z) & \text{if z is database point vector} \\
+	h_{u,v}(z,-z) & \text{if z is query hyperplane vector}
+\end{cases}$ \\
+\begin{align}
+P(h(w)=h(x)) &= P(h_u(w)=h_u(x))P(h_v(-w)=h_v(x)) \\
+&= \frac{1}{4} - \frac{1}{\pi^2}(\theta-\frac{\pi}{2})^2
+\end{align}
+% subsubsection hashing_a_hyperplane (end)
+\subsubsection{Generalised binary search (GBS)} % (fold)
+\label{ssub:gbs}
+$D = \{(x_1,y_1) \cdots (x_n,y_n) \}$ \qquad 
+$\mathcal{V}(D) = \{w: \forall(x,y) \in D \ \mathrm{sign}(w^tx) = y \}$ \\
+\textbf{unlabeled pool: } $U = \{x_1',\cdots,x_n'\}$ \\
+\textbf{relevant version space: } $\hat{\mathcal{V}}(D,U) = \{h:U \to \{+1,-1\} : \exists w \in \mathcal{V}(D) \forall x\in U \ \mathrm{sign}(w^Tx) = h(y) \}$
+\begin{mdframed}
+	\begin{algorithmic}
+		\State start with $D=\{\}$
+		\While{$|\hat{\mathcal{V}}(D,U)|>1$}
+			\For{each unlabeled example x in a compute}
+				\State $|\hat{\mathcal{V}}(D\cup \{x^+\},U)| = w_+$
+				\State $|\hat{\mathcal{V}}(D\cup \{x^-\},U)| = w_-$
+			\EndFor
+			\State pick example where $|w_- - w_+|$ is smallest
+			\State request label and add to D
+		\EndWhile
+	\end{algorithmic}
+\end{mdframed}
+% subsubsection gbs (end)
+\subsubsection{Version space reduction} % (fold)
+\label{ssub:version_space_reduction}
+\textbf{max-min margin: } $\max |w_- - w_+|$ \quad \textbf{ratio margin: } $\max \{\frac{w_-}{w_+},\frac{w_+}{w_-} \}$
+% subsubsection version_space_reduction (end)
+\subsubsection{Tricks} % (fold)
+\label{ssub:tricks}
+\begin{itemize}
+	\item only pick from a random subsample of points
+	\item only use `fancy' criteria for first 10 examples then switch to uncertainty sampling 
+	\item occasionally pick points uniformly at random
+\end{itemize}
+% subsubsection tricks (end)
+% subsection active_learning (end)
+
+\subsection{Unsupervised Learning} % (fold)
+\label{sub:unsupervised_learning}
+\subsubsection{Online K-means} % (fold)
+\label{ssub:k_means}
+
+$L(\mu) = \sum_{i=1}^N \min_j ||u_j - x_i||_2^2$
+$$
+\frac{\partial f_i(\mu)}{\partial \mu_j} = 
+\begin{cases}
+0 & \text{if} j \notin \arg\min ||\mu_j-x_i||^2 \\
+2(\mu_j-x_i) & \text{otherwise}	
+\end{cases}
+$$
+\begin{mdframed}
+	\begin{algorithmic}
+		\State initialize centers randomly
+		\For{$t=1:N$}
+			\State $c \gets \arg\min_j||\mu_j-x_t||^2$
+			\State $\mu_c \gets \mu_c + \eta_t(x_t-\mu_c)$
+		\EndFor
+	\end{algorithmic}
+\end{mdframed}
+Converges to local optimum given $\sum_t \eta_t = \infty$ and $\sum_t \eta_t^2 < \infty$
+% subsubsection k_means (end)
+\subsubsection{Constructing Coresets} % (fold)
+\label{ssub:constructing_coresets}
+C is called a $(k,\epsilon)$ coreset for data D if \\
+$(1-\epsilon)L_k(\mu,D) \leq L_k(\mu,C) \leq (1+\epsilon)L_k(\mu,D)$
+\begin{align}
+C&=\{(x_{R1},\frac{1}{nq(R1)}),\cdots,(x_{Rn},\frac{1}{nq(Rn)})\} \\
+L(\mu,C) &= \sum_{i=1}^n \frac{1}{nq(R_i)} \min_j ||x_{Ri}-\mu_j||^2 \\
+\mathrm{E}[L(\mu,C) ] &= \sum_{l=1}^N \sum_{i=1}^n\frac{q(l)}{nq(l)} \min_j ||x_{Rl}-\mu_j||^2 = L(\mu,D)
+\end{align}
+
+\begin{mdframed}
+	\begin{algorithmic}
+ 		\State $B \gets \emptyset, D \gets D'$
+		\While{$D'\neq \emptyset$}
+			\State $S \gets \textrm{uniformly sample } 10dk \log(\frac{1}{epsilon}) \textrm{points from D'}$
+			\State Remove $\frac{|D'|}{2}$ points nearest to S from D'
+			\State $B \gets B \cup S$
+		\EndWhile
+		\State Partition D into Voronoi cells $D_b$ centered at $b \in B$ \\
+		$q(x)\propto \frac{5}{|D_b|} + \frac{dist(x,B)^2}{\sum_{x'}dist(x',B)^2}$ \qquad $\gamma(x) = \frac{1}{|C|q(x)}$ \\
+		\State $C \gets \mathrm{sample} \ 10dk \log^2 n \log(\frac{1}{\delta})/\epsilon^2$ from D via q 
+ 	\end{algorithmic}
+\end{mdframed}
+
+Can find a coreset in $\mathcal{O}(k^3/\epsilon^{d+1})$ and weak coreset in $\mathcal{O}(\mathrm{poly(k,d/\epsilon)})$ \\
+\begin{tabular}{l l}
+\textbf{merge:} & union of two $(k,\epsilon)$ coresets is a $(k,\epsilon)$ coreset \\
+\textbf{compress:} & $(k,\delta)$ coreset of a $(k,\epsilon)$ coreset is a $(k,\epsilon + \delta + \epsilon \delta)$
+\end{tabular}
+% subsubsection constructing_coresets (end)
+% subsection unsupervised_learning (end)
+
+\subsection{Recommender Systems} % (fold)
+\label{sub:recommenders}
+\textbf{regret: } $\mu^\ast n - \mu_j \sum_{j=1}^K \E[n_j(n)]$ after n steps where $\mu^\ast$ is expectation of optimal machine payoff and $\mu_j$ expectation of machine j.
+\subsubsection{Epsilon Greedy} % (fold)
+\label{ssub:k_armed}
+set $\epsilon_t ~ 1 / t$ and explore with $P=\epsilon_t$, exploit otherwise \\
+$R_T = \mathcal{O}(k \log T)$
+\subsubsection{Confidence Bounds} % (fold)
+\label{ssub:confidence_bounds}
+Let $X_1,X_m$ be iid RV taking values in [0,1] \\
+$\mu = \mathrm{E}[X] \quad \hat{\mu_m}=\frac{1}{m} \sum_{l=1}^{m} X_l$ \\
+then $P(|\mu - \hat{\mu}_m| \geq b) \leq 2 \exp(-2b^2m)$ with $b=\sqrt{\frac{1}{2m}\log\frac{2}{\delta}}$
+% subsubsection confidence_bounds (end)
+\subsubsection{UCB1} % (fold)
+\label{ssub:ucb1}
+Optimum in face of uncertainty
+\begin{algorithmic}
+	\State set $\hat{\mu}_1,\cdots,\hat{\mu}_k=0$, $n_1,\cdots,n_k=0$
+	\For{$t=1:T$}
+		\State $\mathrm{UCB}(i) = \hat{\mu}_i + \sqrt{\frac{2 \log t}{n_i}}$
+		\State pick $j = \arg\max_i \mathrm{UCB}(i)$ and observe $y_t$
+		\State $n_j \gets n_j + 1 \quad \hat{\mu}_j \gets \hat{\mu}_j + \frac{y_t-\hat{\mu}_j}{n_j}$
+	\EndFor
+\end{algorithmic}
+% subsubsection ucb1 (end)
+\subsection{LinUCB} % (fold)
+\label{sub:linucb}
+$y_t = w_i^T z_t + \epsilon_t$ \qquad $\arg\min_{w}\sum_{t=1}^n(y_t-w_i^Tz_i) + ||w||_2^2$ \\
+closed form solution: $\hat{w}_i = (D_i^T D_i + I)^{-1}D_i^Ty_i$ (Ridge Regression)
+$$
+D_i \left[ \begin{array}{c c c}
+\horzbar & z_1 & \horzbar \\ 
+& \vdots & \\ 
+\horzbar & z_n & \horzbar
+\end{array}
+\right]
+	\qquad y_i = \begin{bmatrix}
+		y_1 \\ 
+		\vdots \\
+		y_n
+	\end{bmatrix} \\
+|\hat{w}_i^T z_t - w_i^T z^T| \leq \alpha \sqrt{z_t^T(D_i^TD_i+I)^{-1}z_t}
+$$
+with probability at least $1-\delta$ as long as $\alpha = 1 + \sqrt{\log(2/\delta)/2}$ \\
+$R_T/T = \mathcal{O}(dd' \mathrm{poly}(\log(T/\sqrt{T})))$
+% subsection linucb (end)
+% subsubsection k_armed (end)
+\subsubsection{Hybrid} % (fold)
+\label{ssub:hybrid}
+$y_t = w_i^T z_t + \beta^T \phi(x_i,z_t) + \epsilon_t$
+% subsubsection hybrid (end)
+
+\subsubsection{Rejection Sampling} % (fold)
+\label{ssub:rejection_sampling}
+\begin{algorithmic}
+	\For{$t=1:T$}
+		\State Get next event from log $(\{x_t^{1:k}\},z_t,a_t,y_t)$
+		\State Use bandit algorithm to select $a_t'$
+		\If{$a_t'=a_t$}
+			\State feed back reward $y_t$ to the algorithm
+		\Else
+			\State ignore log line
+		\EndIf
+	\EndFor
+\end{algorithmic}
+% subsubsection rejection_sampling (end)
+% subsection recommenders (end)
+
+\subsection{Appendix}
+\subsubsection{Distance Functions} % (fold)
+\label{ssub:distance_functions}
+$d(s,t)$ is a distance function if \\
+\textbf{a)} $d(s,t) \geq 0$ \textbf{b)} $d(s,s) = 0$ 
+\textbf{c)} $d(t,s) = d(s,t)$ \textbf{d)} $d(s,r) \leq d(s,t) + d(t,r)$\\
+%\begin{mdframed}
+	\begin{tabular} {l p{6cm}}
+		\emph{$l_p$ distance:} & $d_p(x,x') = (\sum_{i=1}^D |x-x'|^p)^{1/p}$ \\
+		\emph{$l_\infty$ distance:} & $d_\infty(x,x') = \max_i |x-x'|$ \\
+		\emph{cosine distance:} & $d(x,x') = \frac{arc\cos(x^T x')}{||x||_2||x'||_2}$ \\
+		\emph{edit distance:} & how many inserts/deletes to transform one string into another \\
+		\emph{Jaccard distance: } & $d(x,x') =  1- \frac{x \cap x'}{x \cup x'}$ 
+	\end{tabular}
+%\end{mdframed}
+
+% subsubsection distance_functions (end)
+\subsubsection{Convex Programming} % (fold)
+\label{ssub:convex_programming}
+\textbf{convex set:}\\
+$\textrm{S is convex if} \ \forall x, x' \in S , \lambda \in [0,1]$
+$\lambda x + (1- \lambda) x' \in S $ \\
+\textbf{convex function:}\\
+$f:\mathbb{R}^d \to \mathbb{R} \ \textrm{is convex if}$ \  
+$\forall x, x' \in S , \lambda \in [0,1] \\
+f(\lambda x + (1-\lambda)x') \leq \lambda f(x) + (1-\lambda) f(x')$ \\
+\textbf{subgradient:}\\
+for $f(x)$ convex, $g(x)$ is a subgradient of f at $x_0$ iff \\
+$\forall x \ f(x) \geq f(x_0) + g^T(x-x_0)$
+% subsubsection convex_programming (end)
+
+\subsubsection{Submodularity} % (fold)
+\label{ssub:submodularity}
+Set function F on V is submodular if $\forall A \subseteq B$ and $s \notin B$ and $a_1,a_2 \notin A$
+\begin{align}
+F(A \cup \{s\}) - F(A) &\geq F(B \cup \{s\}) - F(B) \quad \textrm{Dim. returns} \\
+F(S) + F(T) &\geq F(S \cup T) + F(S \cap T) \\
+F(A \cup \{a_1\}) + F(A \cup \{a_2\}) &\geq F(A \cup \{a_1,a_2\}) + f(A)
+\end{align}
+
+\textbf{Closedness under}\\
+\emph{Non-negative linear combinations: } for $F_1,\cdots,F_m$ submodular functions and $\lambda_1, \cdots, \lambda_m \geq 0$
+\begingroup
+    \fontsize{8pt}{8pt}\selectfont 
+$$
+F(A \cup \{ s \}) - F(A) = \left(\sum_i \lambda_i F_i(A \cup \{s\}) \right) - \left( \sum_i \lambda_i F_i(A)  \right) \\
+ = \sum_i \lambda_i (F_i(A \cup \{s\} - F_i(A)) \geq \sum_i \lambda_i (F_i(B \cup \{s\} - F_i(B)) \\
+\geq (F(B \cup \{s\} - F(B))
+$$
+\endgroup
+\emph{Restrictions: } for F submodular over $V$ and $S,W \subseteq V$
+$$
+F'(S) = F(S \cap W) \quad \textrm{submodular}
+$$
+\emph{Conditioning: } for F submodular over $V$ and $S,W \subseteq V$
+$$
+F'(S) = F(S \cup W) \quad \textrm{submodular}
+$$
+\emph{Reflection: } for F submodular over $V$
+$$
+F'(S) = F(V \backslash S) \quad \textrm{submodular}
+$$
+\begin{mdframed}
+	For $F_{1,2}(A)$, $\max \{F_1(A),F_2(A) \}$ or $\min \{F_1(A),F_2(A) \}$ \textbf{not} submodular in general.
+\end{mdframed}
+
+\textbf{Example: }
+\begingroup
+    \fontsize{8pt}{8pt}\selectfont 
+$$
+\max_{j\in A \cup \{s\}} M_{ij} - \max_{j\in A} M_{ij} = \max \{M_{is},\max_{j\in A} M_{ij} \} - \max_{j \in A} M_{ij} \\
+= \max \{ M_{is} - \max_{j \in A} M_{ij}, 0 \} \\
+\text{If } A \subseteq B \ \text{then} \ \max_{j \in A} M_{ij} \leq \max_{j \in B} M_{ij}
+$$
+\endgroup
+
+\textbf{Lazy Greedy Algorithm}
+	\begin{algorithmic}
+		\State start with $A_0=\{\}$
+		\State keep ordered list of marginal benefits $\Delta_i$ from prev. it.
+		\For{i=1:k}
+			\State $\Delta_i = F(A_{i-1} \cup \{s^\ast\})$ where $s^\ast$ is for top element
+			\If{i is still top element}
+				\State $A_i = A_{i-1} \cup \{s^\ast\}$
+			\Else
+				\State resort $\Delta_i$ and assign greedily
+			\EndIf
+		\EndFor
+	\end{algorithmic}
+
+
+
+% subsubsection submodularity (end)
+
+\end{multicols*}
+\end{document}
