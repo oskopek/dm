@@ -11,8 +11,10 @@
 %    Cheat Sheet By Vincent Ulitzsch and Mario Gersbach
 
 \documentclass[11pt,landscape]{article}
+%\usepackage{times}
 \usepackage[scaled]{helvet}
 \usepackage{multicol}
+\usepackage{xcolor}
 \usepackage{calc}
 \usepackage{ifthen}
 \usepackage[landscape]{geometry}
@@ -31,6 +33,7 @@
         {\geometry{top=1cm,left=1cm,right=1cm,bottom=1cm} }
     }
 
+
 \algnewcommand\algorithmicforeach{\textbf{for each}}
 \algdef{S}[FOR]{ForEach}[1]{\algorithmicforeach\ #1\ \algorithmicdo}
 
@@ -38,20 +41,24 @@
 \pagestyle{empty}
 \titlespacing{\section}{0pt}{\parskip}{-\parskip}
 
+\definecolor{sectionColor}{HTML}{EE0000}
+\definecolor{subsectionColor}{HTML}{FF7F00}
+\definecolor{subsubsectionColor}{HTML}{EE6600}
+
 % Redefine section commands to use less space
 \makeatletter
 \renewcommand{\section}{\@startsection{section}{1}{0mm}%
                                 {-1ex plus -.5ex minus -.2ex}%
                                 {0.5ex plus .2ex}%x
-                                {\normalfont\normalsize\bfseries}}
+                                {\color{sectionColor}\normalfont\normalsize\bfseries}}
 \renewcommand{\subsection}{\@startsection{subsection}{2}{0mm}%
-                                {-1explus -.5ex minus -.2ex}%
+                                {-1ex plus -.5ex minus -.2ex}%
                                 {0.5ex plus .2ex}%
-                                {\normalfont\normalsize\bfseries}}
+                                {\color{subsectionColor}\normalfont\normalsize\bfseries}}
 \renewcommand{\subsubsection}{\@startsection{subsubsection}{3}{0mm}%
                                 {-1ex plus -.5ex minus -.2ex}%
                                 {1ex plus .2ex}%
-                                {\normalfont\small\bfseries}}
+                                {\color{subsubsectionColor}\normalfont\small\bfseries}}
 \makeatother
 
 % Define BibTeX command
@@ -167,7 +174,8 @@ where $w \leftarrow \frac{w}{||w||_2}$, $w \sim \mathcal{N}(0,I)$, $w_i \sim \ma
             $ \min_w \sum_{i} \max(0,1-y_iw^Tx_i)$ s.t. $||w||_2 \leq \frac{1}{\sqrt{\lambda}}$
         \item[Strongly convex formulation]
             $ \min_w \frac{1}{T} \sum_{t=1}^{T} \left ( \frac{\lambda}{2} ||w||_2^2 + \max(0,1-y_t w^T x_t) \right )$\\ s.t. $ ||w||_2 \leq \frac{1}{\sqrt{\lambda}}$\\
-            $\text{Proj}_S(w) = w \cdot \min\left(1, \frac{1/\sqrt{\lambda}}{||w||}\right)$
+            $\text{Proj}_S^{(2)}(w) = w \cdot \min\left(1, \frac{1/\sqrt{\lambda}}{||w||}\right)$\\
+            $\text{Proj}_S^{(\infty)}(w) = \max\left((1, \ldots, 1)^T, w\right)$
     \end{description}
     \textbf{Small $C$, Big $\lambda$:} Greater margin, more misclassification
 
@@ -225,7 +233,7 @@ where $w \leftarrow \frac{w}{||w||_2}$, $w \sim \mathcal{N}(0,I)$, $w_i \sim \ma
 
 \section{Active Learning}
 \begin{description}
-    \item[Uncertainty sampling] Repeat until we can infer all remaining labels:
+    \item[Uncertainty sampling] Repeat until all labels inferred:
     \begin{enumerate}
         \item Assign uncertainty score $U_t(x)$ to each unlabeled data point:
         $U_t(x) = U \left ( x | x_{1:t-1},y_{1:t-1} \right )$
@@ -259,13 +267,13 @@ where $w \leftarrow \frac{w}{||w||_2}$, $w \sim \mathcal{N}(0,I)$, $w_i \sim \ma
             \ForEach {unlabeled example x in $U$}
                 \State {$ v^+(x) = |\hat{V}(D \cup \{(x,+)\}; U)|$}
                 \State {$ v^-(x) = |\hat{V}(D \cup \{(x,-)\}; U)|$}
-                \State \Comment number of labelings still left if $x$ is $-$/$+$
+                \State \Comment number of labelings left if $x$ is $-$/$+$
             \EndFor
             \State {Pick $x^{\ast} = \text{arg}\min_{x} \max(v^-(x),v^+(x))$}
             \State $D = D \cup \{x^\ast\}$
         \EndWhile
     \end{algorithmic}
-\item[Decision rules] for GBS SVM, $m \sim$ margin\\
+\item[Decision rules] for GBS SVM, $m \sim$ margin $\sim \frac{1}{||w||}$\\
     \begin{description}
         \item[Max-min margin] $\max_x \min \left( m^+(x),m^-(x) \right)$
         \item[Ratio margin] $\max_x \min \left (\frac{m^+(x)}{m^-(x)},\frac{m^-(x)}{m^+(x)} \right)$
@@ -333,7 +341,7 @@ where $w \leftarrow \frac{w}{||w||_2}$, $w \sim \mathcal{N}(0,I)$, $w_i \sim \ma
 \subsection{UCB1 \& LinUCB}
 \begin{description}
     \item[Hoeffding's inequality] $\Pr(|\mu - \frac{1}{m} \sum_{t=1}^m X_t | \geq b) \leq 2 \cdot \exp(-2b^2m)$
-    \item[Confidence bound]: Want: Hoeffding $\leq \delta$
+    \item[Confidence bound] Want: Hoeffding $\leq \delta$
         $\Rightarrow b = \sqrt{\frac{1}{2m}\ln\frac{2}{\delta}}$
     \item[UCB/Mean update]
     $UCB(i) = \hat{\mu_i}+ \sqrt{\frac{2 \ln t}{\eta_i}}$
@@ -363,12 +371,14 @@ where $w \leftarrow \frac{w}{||w||_2}$, $w \sim \mathcal{N}(0,I)$, $w_i \sim \ma
 \begin{description}
     \item[Submodulatity] A function $F: 2^V \mapsto \mathbb{R}$ is called submodular iff for all $A \subseteq B, s \notin B$:
         $$F(A \cup \{s\}) - F(A) \geq F(B \cup \{s\}) - F(B)$$
+    \item[Union-intersection def.] Same preconditions as above: $$F(A) - F(A\cap B) \geq F(A\cup B) - F(B)$$
     \item[Closure properties] $F, F_i$ submodular on $V$; $S, W \subseteq V$
     \begin{description}
         \item[Linear] \textbf{Combinations}\\ $F'(S) = \sum_{i} \lambda_i F_i(S)$, $\lambda_i \geq 0$
         \item[Restriction] $F'(S) = F(S \cap W)$
         \item[Conditiong] $F'(S) = F(S \cup W)$
         \item[Reflection] $F'(S) = F(V \setminus S)$
+        \item[Monotonic truncation] $F$ also monotonic, $F'(S) = \min(c, F(S)), c \in \mathbb{R}$
     \end{description}
     \item[Min/Max] For $F_{1,2}(A)$, $\max \{F_1(A),F_2(A) \}$ or $\min \{F_1(A),F_2(A) \}$ \textbf{not} submodular in general.
     \item[Concavity]
