@@ -348,7 +348,7 @@ where $w \leftarrow \frac{w}{||w||_2}$, $w \sim \mathcal{N}(0,I)$, $w_i \sim \ma
         $j = \text{arg}\max_i UCB(i)$\\
     $\hat{\mu_j} = \hat{\mu_j} + \frac{1}{\eta_j} (y_t - \hat{u}_j)$
     \item[Contextual bandits] Reward is now $y_t = f(x_t,z_t) + \epsilon_t$ with $z_t$ user features. For us: $f(x_i,z_t) = w^T_{x_i}z_t$
-    \item[LinUCB (disjoint)] RidgeRegression on $z_t$,
+    \item[LinUCB (disjoint)] Ridge regression on $z_t$:
         $\hat{w}_i = (D_i^TD_i + I)^{-1}D_i^Ty_i$.\\
         $|\hat{w}_i^Tz_t - w_i^Tz_t| \leq \alpha \sqrt{z_t^T(D_i^TD_i)^{-1}z_t}$ with
         probability $1-\delta$ if $\alpha = 1 + \sqrt{\log(2/\delta)/2}$\\
