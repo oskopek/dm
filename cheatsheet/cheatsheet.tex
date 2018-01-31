@@ -177,7 +177,7 @@ where $w \leftarrow \frac{w}{||w||_2}$, $w \sim \mathcal{N}(0,I)$, $w_i \sim \ma
         \item[Strongly convex formulation]
             $ \min_w \frac{1}{T} \sum_{t=1}^{T} \left ( \frac{\lambda}{2} ||w||_2^2 + \max(0,1-y_t w^T x_t) \right )$\\ s.t. $ ||w||_2 \leq \frac{1}{\sqrt{\lambda}}$\\
             $\text{Proj}_S^{(2)}(w) = w \cdot \min\left(1, \frac{1/\sqrt{\lambda}}{||w||}\right)$\\
-            $\text{Proj}_S^{(\infty)}(w) = \max\left((1/\sqrt{\lambda}, \ldots, 1/\sqrt{\lambda})^T, w\right)$
+            $\text{Proj}_S^{(\infty)}(w) = \min\left((1/\sqrt{\lambda}, \ldots, 1/\sqrt{\lambda})^T, w\right) \cdot \text{sgn}(w)$
     \end{description}
     \textbf{Small $C$, Big $\lambda$:} Greater margin, more misclassification
 
