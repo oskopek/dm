@@ -114,8 +114,8 @@ Jaccard-Distance & $1-\text{sim}(A,B) = 1 - \frac{|A \cap B|}{|A \cup B|}$
     $f(x') \geq f(x) + \nabla f(x)^T (x'-x) + \frac{H}{2} ||x' -x||^2, H > 0$\\
     1-D: $f$ is H-sc $\Leftarrow f''(x) \geq H, \forall x$.\\
     $d$-D: $f$ is H-sc $\Leftarrow$ $\lambda_{\min}(\nabla^2 f(x)) \geq H, \forall x$.
-    \item[Subgradients] Given a convex not necessarily differentiable function f, a subgradient $g_x \in \nabla f(x)$ is the slope of a linear lower bound of f, tight at x, that is
-    $\forall x' \in S \colon f(x') \geq f(x) + g^T_x(x' - x)$
+\item[Subgradients] Given a convex not necessarily differentiable function $f$, a subgradient $\mathbf{g_x} \in \nabla f(x)$ is the slope of a linear lower bound of $f$, tight at $x$, that is
+    $\forall x' \in S \colon f(x') \geq f(x) + \mathbf{g_x}^T(x' - x)$
 \end{description}
 
 \section{Locality Sensitive Hashing}
@@ -127,6 +127,7 @@ Jaccard-Distance & $1-\text{sim}(A,B) = 1 - \frac{|A \cap B|}{|A \cup B|}$
         \item[Min-hashing] $h(C) = h_{\pi}(C) = \min_{i : C(i) = 1} \pi(i)$
             \subitem $\pi(i) = h_{a, b}(i) = ((a \cdot i + b) \mod p) \mod N)$,
         $p \text{ prime (fixed) } > N$, $N$ number of documents
+        $(d_1, d_2, 1-d_1, 1-d_2)$-sensitive with Jaccard sim.
             \hrule
             \begin{algorithmic}[1]
 \For {each column $c$}
@@ -139,9 +140,9 @@ Jaccard-Distance & $1-\text{sim}(A,B) = 1 - \frac{|A \cap B|}{|A \cup B|}$
     \EndFor
 \EndFor
 \end{algorithmic}
-        \item[Band-hashing] Signature matrix into b bands of r hash fns,
-            per-column into b hash tables. If any h-table has a collision,
-            report candidate pair. $s^r$ prob of col on band j: $P(\text{col in } \geq 1 \text{ band}) = 1-(1-s^r)^b$
+        \item[Band-hashing] Signature matrix into $b$ bands of $r$ hash fns,
+            per-column into $b$ hash tables. If any h-table has a collision,
+            report candidate pair. $s^r$ prob of col on band $j$: $P(\text{col in } \geq 1 \text{ band}) = 1-(1-s^r)^b$
         \item[$(d1,d2,p1,p2)$-sensitivity] Assume $d_1<d_2$, $p_1>p_2$.
                 $\forall x,y \in S: d(x,y) \leq d_1 \Rightarrow Pr[h(x)=h(y)] \geq p_1$\\
                 $\forall x,y \in S: d(x,y) \geq d_2 \Rightarrow Pr[h(x)=h(y)] \leq p_2$
@@ -159,6 +160,7 @@ where $w \leftarrow \frac{w}{||w||_2}$, $w \sim \mathcal{N}(0,I)$, $w_i \sim \ma
     \item[Cosine distance] $\mathcal{H} = \{ h(v) = \text{sgn}(w^Tv) \}$ where
         $w \sim \text{Unif} \{ x \in \mathbb{R}^n : ||x||_2 = 1 \}$
         $Pr(h_u(x) = h_v(y)) = 1 - \Theta_{x, y}/\pi$
+        $(\Theta_1, \Theta_2, 1-\Theta_1 / \pi, 1-\Theta_2 / \pi)$-sensitive
 \end{description}
 
 \section{Support Vector Machines}
@@ -175,7 +177,7 @@ where $w \leftarrow \frac{w}{||w||_2}$, $w \sim \mathcal{N}(0,I)$, $w_i \sim \ma
         \item[Strongly convex formulation]
             $ \min_w \frac{1}{T} \sum_{t=1}^{T} \left ( \frac{\lambda}{2} ||w||_2^2 + \max(0,1-y_t w^T x_t) \right )$\\ s.t. $ ||w||_2 \leq \frac{1}{\sqrt{\lambda}}$\\
             $\text{Proj}_S^{(2)}(w) = w \cdot \min\left(1, \frac{1/\sqrt{\lambda}}{||w||}\right)$\\
-            $\text{Proj}_S^{(\infty)}(w) = \max\left((1, \ldots, 1)^T, w\right)$
+            $\text{Proj}_S^{(\infty)}(w) = \max\left((1/\sqrt{\lambda}, \ldots, 1/\sqrt{\lambda})^T, w\right)$
     \end{description}
     \textbf{Small $C$, Big $\lambda$:} Greater margin, more misclassification
 
@@ -314,7 +316,7 @@ where $w \leftarrow \frac{w}{||w||_2}$, $w \sim \mathcal{N}(0,I)$, $w_i \sim \ma
 
 \subsection{Coresets}
 \begin{description}
-    \item[Key idea] Replace many points by one weighted representative, thus, obtain C
+    \item[Idea] Replace many points by one weighted point
     $ L_k(u;C) = \sum_{(w,x) \in C} w \cdot \min_j || u_j - x ||_2^2$
     \item[$(k,\epsilon)$-coreset] $C$ is called a $(k,\epsilon)$-coreset for $D$, if for all $\mu$:
     $(1-\epsilon) L_k(\mu;D) \leq L_k(\mu;C) \leq (1+\epsilon) L_k(\mu;D)$
@@ -322,7 +324,7 @@ where $w \leftarrow \frac{w}{||w||_2}$, $w \sim \mathcal{N}(0,I)$, $w_i \sim \ma
     \textbf{Compress}: $(k,\delta)$-cset of a $(k, \epsilon)$-cset of $D$ is a $(k, \epsilon + \delta + \epsilon\delta)$-cset of $D$
 \item[Construction]
     \textbf{$D^2$-sampling}: iteratively build $B = \emptyset$ by sampling $\propto \frac{\text{d}(x, B)^2}{\sum_{x' \in X} \text{d}(x', B)^2}$\\
-    \textbf{Importance sampling}: $\propto \frac{\alpha \text{d}(x, B)^2}{c_\Phi} + \frac{2\alpha\sum_{x' \in B_x} \text{d}(x', B)^2}{|B_x|c_Phi} + \frac{4|X|}{|B_x|}$
+    \textbf{Importance sampling}: $\propto \frac{\alpha \text{d}(x, B)^2}{c_\Phi} + \frac{2\alpha\sum_{x' \in B_x} \text{d}(x', B)^2}{|B_x|c_\Phi} + \frac{4|X|}{|B_x|}$
         where $c_\Phi = \frac{1}{|X|}\sum_{x \in X}\text{d}(x, B)^2$\\
         $B_x = $ pts in $X$ that belong to same cluster as $x$
 \end{description}
@@ -369,8 +371,9 @@ where $w \leftarrow \frac{w}{||w||_2}$, $w \sim \mathcal{N}(0,I)$, $w_i \sim \ma
 
 \subsection{Submodular Functions}
 \begin{description}
-    \item[Submodulatity] A function $F: 2^V \mapsto \mathbb{R}$ is called submodular iff for all $A \subseteq B, s \notin B$:
+    \item[Submodularity] A function $F: 2^V \mapsto \mathbb{R}$ is called submodular iff for all $A \subseteq B, s \notin B$:
         $$F(A \cup \{s\}) - F(A) \geq F(B \cup \{s\}) - F(B)$$
+    \item[Monotonic] if $S \subseteq T \Rightarrow F(S) \leq F(T)$
     \item[Union-intersection def.] Same preconditions as above: $$F(A) - F(A\cap B) \geq F(A\cup B) - F(B)$$
     \item[Closure properties] $F, F_i$ submodular on $V$; $S, W \subseteq V$
     \begin{description}
@@ -383,17 +386,17 @@ where $w \leftarrow \frac{w}{||w||_2}$, $w \sim \mathcal{N}(0,I)$, $w_i \sim \ma
     \item[Min/Max] For $F_{1,2}(A)$, $\max \{F_1(A),F_2(A) \}$ or $\min \{F_1(A),F_2(A) \}$ \textbf{not} submodular in general.
     \item[Concavity]
     $F(A) = g(|A|)$ where $g: \mathbb{N} \mapsto \mathbb{R}$, then $F$ submodular iff $g$ concave.
-\item[Lazy Greedy] Optimizing submodular \textbf{monotonic} functions.
+\item[Lazy Greedy] Optimizing submodular \textbf{monotonic} functions: $\Delta(s|A_i) \geq \Delta(s|A_{i+1})$.
     \begin{algorithmic}[1]
     \State {$A_0 = \emptyset$.
-        Keep ordered list of marginal benefits $\Delta_i$ from previous iterations
-        }
+        Keep ordered list of marginal benefits $\Delta_s$ from previous iterations $j < i$, for all $s \in \mathcal{S}$, set of articles}
         \For {$i = 1 \ldots k:$}
-            \State {$\Delta_i = F(A_{i-1} \cup \{\text{top element}\}) - F(A_{i-1})$}
-            \If {$i$ is not top element anymore}
-            \State{re-sort the list}
+            \State $s$ is the article for which $\Delta_s$ is at the top
+            \State {Update: $\Delta_s = F(A_{i-1} \cup \{s\}) - F(A_{i-1})$}
+            \If {$\Delta_s$ is not top element anymore}
+            \State{re-sort the list, goto 3}
             \EndIf
-            \State {$A_i = A_{i-1} \cup \{\text{top element}\}$}
+            \State {$A_i = A_{i-1} \cup \{s\}$}
         \EndFor
 \end{algorithmic}
 \end{description}
